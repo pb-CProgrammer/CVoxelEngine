@@ -10,33 +10,31 @@
 KHASH_MAP_INIT_INT64(chunk_map, Chunk*)
 khash_t(chunk_map) *chunkMap;
 
-//this function calculates which chunks to draw and draws them
-void chunkManagerDraw(float playerPosX, float playerPosZ)
-{
+int startChunkX, startChunkZ, endChunkX, endChunkZ;
+
+void calculateDrawArea(float playerPosX, float playerPosZ, int* startChunkX, int* startChunkZ, int* endChunkX, int* endChunkZ)
+{   
     //calculate player pos in chunks
     float currentChunkX = playerPosX / (float)CHUNK_SIZE;
     float currentChunkZ = playerPosZ / (float)CHUNK_SIZE;
 
-    int startChunkX, startChunkZ;
-    int endChunkX, endChunkZ;
-
     if(DRAW_AREA_IN_CHUNKS % 2 != 0)
     {
         //if draw area is odd, program just subtract 1 from it, and add to player pos in each direction
-        startChunkX = (int)floor(currentChunkX) - (DRAW_AREA_IN_CHUNKS - 1) / 2;
-        startChunkZ = (int)floor(currentChunkZ) - (DRAW_AREA_IN_CHUNKS - 1) / 2;
+        *startChunkX = (int)floor(currentChunkX) - (DRAW_AREA_IN_CHUNKS - 1) / 2;
+        *startChunkZ = (int)floor(currentChunkZ) - (DRAW_AREA_IN_CHUNKS - 1) / 2;
 
-        endChunkX = (int)floor(currentChunkX) + (DRAW_AREA_IN_CHUNKS - 1) / 2;
-        endChunkZ = (int)floor(currentChunkZ) + (DRAW_AREA_IN_CHUNKS - 1) / 2;
+        *endChunkX = (int)floor(currentChunkX) + (DRAW_AREA_IN_CHUNKS - 1) / 2;
+        *endChunkZ = (int)floor(currentChunkZ) + (DRAW_AREA_IN_CHUNKS - 1) / 2;
     }
     else
     {
         //else program first calculates square of chunks which for sure will be drawn
-        startChunkX = (int)floor(currentChunkX) - (DRAW_AREA_IN_CHUNKS - 2) / 2;
-        startChunkZ = (int)floor(currentChunkZ) - (DRAW_AREA_IN_CHUNKS - 2) / 2;
+        *startChunkX = (int)floor(currentChunkX) - (DRAW_AREA_IN_CHUNKS - 2) / 2;
+        *startChunkZ = (int)floor(currentChunkZ) - (DRAW_AREA_IN_CHUNKS - 2) / 2;
 
-        endChunkX = (int)floor(currentChunkX) + (DRAW_AREA_IN_CHUNKS - 2) / 2;
-        endChunkZ = (int)floor(currentChunkZ) + (DRAW_AREA_IN_CHUNKS - 2) / 2;
+        *endChunkX = (int)floor(currentChunkX) + (DRAW_AREA_IN_CHUNKS - 2) / 2;
+        *endChunkZ = (int)floor(currentChunkZ) + (DRAW_AREA_IN_CHUNKS - 2) / 2;
 
         //and based on player pos in chunk, program add 1 to side that is closer to player
         float offsetInChunkX, offsetInChunkZ;
@@ -54,27 +52,30 @@ void chunkManagerDraw(float playerPosX, float playerPosZ)
 
         if(offsetInChunkX < 0.5f)
         {
-            startChunkX -= 1;
+            *startChunkX -= 1;
         }
         else
         {
-            endChunkX += 1;
+            *endChunkX += 1;
         }
 
         if(offsetInChunkZ < 0.5f)
         {
-            startChunkZ -= 1;
+            *startChunkZ -= 1;
         }
         else
         {
-            endChunkZ += 1;
+            *endChunkZ += 1;
         }
     }
+};
 
-    //firstly in larger square program generates chunks if they down exists, its because generateChunkDrawData() needs 4 surrounding chunks
-    for(int chunkX = startChunkX - 1; chunkX <= endChunkX + 1; chunkX++)
+void generateChunkArea(int startChunkX, int startChunkZ, int endChunkX, int endChunkZ)
+{
+    //generates given square of chunks if they dont exists
+    for(int chunkX = startChunkX; chunkX <= endChunkX; chunkX++)
     {
-        for(int chunkZ = startChunkZ - 1; chunkZ <= endChunkZ + 1; chunkZ++)
+        for(int chunkZ = startChunkZ; chunkZ <= endChunkZ; chunkZ++)
         {
             uint64_t key;
             vec2ToHashKey(chunkX, chunkZ, &key);
@@ -89,6 +90,7 @@ void chunkManagerDraw(float playerPosX, float playerPosZ)
                 chunk->pos[0] = chunkX;
                 chunk->pos[1] = chunkZ;
                 chunk->generatedDrawData = false;
+                chunk->compiledDrawData = false;
 
                 kh_value(chunkMap, foundChunk) = chunk;
 
@@ -96,6 +98,14 @@ void chunkManagerDraw(float playerPosX, float playerPosZ)
             }
         }
     }
+};
+
+void chunkManagerUpdate(float playerPosX, float playerPosZ)
+{
+    calculateDrawArea(playerPosX, playerPosZ, &startChunkX, &startChunkZ, &endChunkX, &endChunkZ);
+
+    //firstly program generates larger square of chunks, its because generateChunkDrawData() needs 4 surrounding chunks
+    generateChunkArea(startChunkX -1, startChunkZ -1, endChunkX + 1, endChunkZ + 1);
 
     //in smaller chunk program firstly gets all surrounding chunks, then if chunk hasnt generated draw data, program generates them and compile them
     //and when everything is done, program draws chunk
@@ -131,6 +141,30 @@ void chunkManagerDraw(float playerPosX, float playerPosZ)
                 if(!chunk->generatedDrawData)
                 {
                     generateChunkDrawData(chunk, westChunk, eastChunk, southChunk, northChunk);
+                }
+            }
+        }
+    }
+};
+
+//this function calculates which chunks to draw and draws them
+void chunkManagerDraw(int startChunkX, int startChunkZ, int endChunkX, int endChunkZ)
+{
+    for(int chunkX = startChunkX; chunkX <= endChunkX; chunkX++)
+    {
+        for(int chunkZ = startChunkZ; chunkZ <= endChunkZ; chunkZ++)
+        {
+            uint64_t key;
+            vec2ToHashKey(chunkX, chunkZ, &key);
+
+            khint_t foundChunk = kh_get(chunk_map, chunkMap, key);
+
+            if(foundChunk != kh_end(chunkMap))
+            {
+                Chunk* chunk = kh_value(chunkMap, foundChunk);
+
+                if(!chunk->compiledDrawData)
+                {
                     compileChunkDrawData(chunk);
                 }
 

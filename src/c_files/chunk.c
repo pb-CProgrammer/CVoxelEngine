@@ -287,4 +287,5 @@ void compileChunkDrawData(Chunk* chunk)
 
     //program releases draw data, because program dont need it
     arrfree(chunk->drawData);
+    chunk->compiledDrawData = true;
 };

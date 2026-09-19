@@ -49,6 +49,8 @@ void playerUpdate(Player* player)
         player->camera.pitch = -89.9f;
     }
 
+    calculatePlayerData(player);
+
     //forward dir doesnt include Y
     vec3 forwardDir;
     forwardDir[0] = player->dir[0];
@@ -63,6 +65,8 @@ void playerUpdate(Player* player)
     updatePos(player, player->D, player->right, -PLAYER_SPEED);
     updatePos(player, player->SPACE, absoluteUp, PLAYER_SPEED);
     updatePos(player, player->SHIFT, absoluteUp, -PLAYER_SPEED);
+
+    calculatePlayerData(player);
 };
 
 //this function inits player struct with starting values

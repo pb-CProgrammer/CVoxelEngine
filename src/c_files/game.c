@@ -53,25 +53,37 @@ void draw()
     voxelEngineDraw();
 };
 
+bool gameInit()
+{
+    //this will be changed
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    //there program inits opengl and voxel engine
+    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        printf("Failed to load glad\n");
+        return false;
+    }
+
+    voxelEngineInit();
+
+    return true;
+};
+
 int gameLogicLoop(void* arg)
 {
     previousNanoTime = glfwGetTime() * 1000000000;
     lastCheckTimeMilis = glfwGetTime() * 1000;
 
-    while(true)
+    mtx_lock(&gameLoopMutex);
+    while(gameRunning)
     {
+        mtx_unlock(&gameLoopMutex);
+
         //it works like this:
         //that loop calculates time difference, then add it to deltaU,
         //and when deltaU is equal or larger than time per update, which is calculated based on UPS we set earlier,
         //update function is called, UPS counter is increased by 1, and deltaU is reset
-
-        mtx_lock(&gameLoopMutex);
-        //when its time to stop program, program breaks out of game logic loop
-        if(!gameRunning)
-        {
-            break;
-        }
-        mtx_unlock(&gameLoopMutex);
 
         //program updates deltas with time difference
         currentNanoTime = glfwGetTime() * 1000000000;
@@ -84,11 +96,11 @@ int gameLogicLoop(void* arg)
         {
             deltaU -= timePerUpdate;
 
-            mtx_lock(&gameLoopMutex);
-
             update();
             countUPS++;
 
+            mtx_lock(&gameLoopMutex);
+            writeToSafeData();
             mtx_unlock(&gameLoopMutex);
         }
 
@@ -115,23 +127,6 @@ int gameLogicLoop(void* arg)
     return 0;
 };
 
-bool gameInit()
-{
-    //this will be changed
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-    //there program inits opengl and voxel engine
-    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        printf("Failed to load glad\n");
-        return false;
-    }
-
-    voxelEngineInit();
-
-    return true;
-};
-
 bool startGameLoop()
 {
     mtx_init(&gameLoopMutex, mtx_plain);
@@ -146,6 +141,7 @@ bool startGameLoop()
         mtx_lock(&gameLoopMutex);
         if(isTimeToDraw)
         {
+            readFromSafeData();
             mtx_unlock(&gameLoopMutex);
 
             //program unlocks variables for drawing, because its safe

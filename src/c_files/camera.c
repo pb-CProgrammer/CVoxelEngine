@@ -15,7 +15,7 @@ void cameraDir(Camera* camera, float* cameraDir)
 //calculates camera right, formula is from learnopengl
 void cameraRight(float* cameraDir, float* cameraRight)
 {
-    vec3_mul_cross(cameraRight, (vec3){0.0f, 1.0f, 0.0f},cameraDir);
+    vec3_mul_cross(cameraRight, absoluteUp,cameraDir);
     vec3_norm(cameraRight, cameraRight);
 };
 
@@ -24,7 +24,6 @@ void cameraUp(float* cameraDir, float* cameraRight, float* cameraUp)
 {
     vec3_mul_cross(cameraUp, cameraDir, cameraRight);
 };
-
 
 //calculates camera target - pos where camera is looking,
 void cameraTarget(float* cameraPos, float* cameraDir, float* cameraTarget)

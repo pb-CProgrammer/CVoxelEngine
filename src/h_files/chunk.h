@@ -19,6 +19,7 @@ typedef struct Chunk
     GLuint VBO, VAO;
     unsigned int vertices;
     bool generatedDrawData;
+    bool compiledDrawData;
 } Chunk;
 
 //draw function and functions for each step of generation of chunk:
