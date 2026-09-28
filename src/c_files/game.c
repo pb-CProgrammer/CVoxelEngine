@@ -8,9 +8,12 @@
 #include "window.h"
 #include "voxel_engine.h"
 
+const int targetUPS = 200;
+const int targetFPS = 60;
+
 //time per frame and update in nanoseconds
-const long timePerUpdate = 1000000000 / UPS;
-const long timePerFrame = 1000000000 / FPS;
+const long timePerUpdate = 1000000000 / targetUPS;
+const long timePerFrame = 1000000000 / targetFPS;
 
 //variable that shows if game loop is active or not
 bool gameRunning = true;
@@ -40,11 +43,6 @@ mtx_t gameLoopMutex;
 
 void update()
 {
-    if(gameStop)
-    {
-        glfwSetWindowShouldClose(window, true);
-    }
-
     voxelEngineUpdate();
 };
 
@@ -75,15 +73,21 @@ int gameLogicLoop(void* arg)
     previousNanoTime = glfwGetTime() * 1000000000;
     lastCheckTimeMilis = glfwGetTime() * 1000;
 
-    mtx_lock(&gameLoopMutex);
-    while(gameRunning)
+    while(true)
     {
-        mtx_unlock(&gameLoopMutex);
-
         //it works like this:
         //that loop calculates time difference, then add it to deltaU,
         //and when deltaU is equal or larger than time per update, which is calculated based on UPS we set earlier,
         //update function is called, UPS counter is increased by 1, and deltaU is reset
+
+        mtx_lock(&gameLoopMutex);
+        //when its time to stop program, program breaks out of game logic loop
+        if(!gameRunning)
+        {
+            mtx_unlock(&gameLoopMutex);
+            break;
+        }
+        mtx_unlock(&gameLoopMutex);
 
         //program updates deltas with time difference
         currentNanoTime = glfwGetTime() * 1000000000;
@@ -165,8 +169,8 @@ bool startGameLoop()
     mtx_unlock(&gameLoopMutex);
 
     //exiting and destroying everything
-    voxelEngineExit();
     thrd_join(gameThread, NULL);
+    voxelEngineExit();
     mtx_destroy(&gameLoopMutex);
 
     glfwTerminate();
@@ -184,7 +188,7 @@ void processGameKeyboardInput(int key, int action)
     //if user press escape button, program will stop
     if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
-        gameStop = true;
+        glfwSetWindowShouldClose(window, true);
     }
 
     processVoxelEngineKeyboardInput(key, action);

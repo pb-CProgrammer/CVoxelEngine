@@ -4,6 +4,7 @@
 #include <glad.h>
 #include <stdbool.h>
 #include <stb/stb_image.h>
+#include <string.h>
 
 bool readFile(const char* fileLocation, const char** fileData)
 {
@@ -41,6 +42,40 @@ bool readFile(const char* fileLocation, const char** fileData)
 
     return true;
 };
+
+bool writeFile(const char* fileLocation, const char* fileData)
+{
+    //opens file in write mode
+    FILE* file = fopen(fileLocation, "w");
+    if (file == NULL)
+    {
+        printf("Failed to open file for writing: %s\n", fileLocation);
+        return false;
+    }
+
+    // checks if data arent empty
+    if (fileData == NULL)
+    {
+        fclose(file);
+        return true; // written empty file
+    }
+
+    size_t data_size = strlen(fileData);
+
+    size_t elements_written = fwrite(fileData, 1, data_size, file);
+    
+    // Sprawdzamy, czy zapisano tyle bajtów, ile planowano
+    if (elements_written != data_size)
+    {
+        printf("Error while writing to file %s\n", fileLocation);
+        fclose(file);
+        return false;
+    }
+
+    // Zamykamy plik i kończymy z sukcesem
+    fclose(file);
+    return true;
+}
 
 bool createShader(GLuint* shader, const char* vertexShaderFileplace, const char* fragmentShaderFileplace)
 {

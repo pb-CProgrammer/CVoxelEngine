@@ -2,17 +2,16 @@
 #define SETTINGS_H
 
 //window opengl stuff
-#define START_WINDOW_WIDTH 800
-#define START_WINDOW_HEIGHT 800
-#define OPENGL_VERSION_MAJOR 4
-#define OPENGL_VERSION_MINOR 6
-#define WINDOW_TITLE "CMinecraft"
-#define UPS 200
-#define FPS 60
+extern int startWindowWidth;
+extern int startWindowHeight;
+extern int openglVersionMajor;
+extern int openglVersionMinor;
+extern const char* windowTitle;
+//FPS UPS
 
 //player stuff
-#define MOUSE_INPUT_SENSITIVITY 0.1f
-#define PLAYER_SPEED 0.1f
+extern float mouseInputSensitivity;
+extern float playerSpeed;
 
 //game stuff
 #define CHUNK_SIZE 16
@@ -26,7 +25,9 @@
 #define TEXTURES_IN_ATLAS_WIDTH 3
 #define TEXTURES_IN_ATLAS_HEIGHT 2
 #define TEXTURES_IN_ATLAS (TEXTURES_IN_ATLAS_WIDTH * TEXTURES_IN_ATLAS_HEIGHT)
-#define DRAW_AREA_IN_CHUNKS 31
-#define WORLD_SEED 283458
+extern int drawAreaInChunks;
+extern int worldSeed;
+
+void initSettings();
 
 #endif

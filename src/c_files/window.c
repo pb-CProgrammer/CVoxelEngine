@@ -1,14 +1,15 @@
 #include "window.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "settings.h"
 #include "game.h"
 
 //definitions of window variables
 GLFWwindow* window = NULL;
 
-int windowWidth = START_WINDOW_WIDTH;
-int windowHeight = START_WINDOW_HEIGHT;
+int windowWidth;
+int windowHeight;
 
 //every time use change window size, window size is updated
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -30,13 +31,17 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos)
 
 bool windowInit()
 {
+    windowWidth = startWindowWidth;
+    windowHeight = startWindowHeight;
+
     //everything here is from settings
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSION_MINOR);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, openglVersionMajor);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, openglVersionMinor);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    window = glfwCreateWindow(windowWidth, windowHeight, WINDOW_TITLE, NULL, NULL);
+    window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
+    free((void*)windowTitle);
     if(window == NULL)
     {
         printf("Failed to create window object\n");

@@ -31,8 +31,8 @@ void playerUpdate(Player* player)
     player->mouseLastY = player->mouseY;
 
     //offset is multiplied by sensivity
-    xOffset *= MOUSE_INPUT_SENSITIVITY;
-    yOffset *= MOUSE_INPUT_SENSITIVITY;
+    xOffset *= mouseInputSensitivity;
+    yOffset *= mouseInputSensitivity;
 
     //camera direction values are updated
     player->camera.yaw += xOffset;
@@ -59,12 +59,12 @@ void playerUpdate(Player* player)
     vec3_norm(forwardDir, forwardDir);
 
     //every axis is seperated for easier transform of that function
-    updatePos(player, player->W, forwardDir, PLAYER_SPEED);
-    updatePos(player, player->S, forwardDir, -PLAYER_SPEED);
-    updatePos(player, player->A, player->right, PLAYER_SPEED);
-    updatePos(player, player->D, player->right, -PLAYER_SPEED);
-    updatePos(player, player->SPACE, absoluteUp, PLAYER_SPEED);
-    updatePos(player, player->SHIFT, absoluteUp, -PLAYER_SPEED);
+    updatePos(player, player->W, forwardDir, playerSpeed);
+    updatePos(player, player->S, forwardDir, -playerSpeed);
+    updatePos(player, player->A, player->right, playerSpeed);
+    updatePos(player, player->D, player->right, -playerSpeed);
+    updatePos(player, player->SPACE, absoluteUp, playerSpeed);
+    updatePos(player, player->SHIFT, absoluteUp, -playerSpeed);
 
     calculatePlayerData(player);
 };

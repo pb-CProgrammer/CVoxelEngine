@@ -1,0 +1,21 @@
+{
+    "window": {
+        "startWindowWidth": 1280,
+        "startWindowHeight": 800,
+        "openglVersionMajor": 4,
+        "openglVersionMinor": 6,
+        "windowTitle": "CVoxelEngine"
+    },
+    "player": {
+        "mouseInputSensitivity": 0.10000000149011612,
+        "playerSpeed": 0.10000000149011612
+    },
+    "game": {
+        "chunkSize": 16,
+        "chunkHeight": 128,
+        "texturesInAtlasWidth": 3,
+        "texturesInAtlasHeight": 2,
+        "drawAreaInChunks": 60,
+        "worldSeed": 283458
+    }
+}

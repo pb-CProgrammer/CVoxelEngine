@@ -11,11 +11,12 @@
 
 /*
  * TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
- * camera files need serious update as weel as draw function - draw function shouldnt calculate anything at all
- * realistic movement, i mean if i press w and a, i should be the same speeed as i would press w, not times sqrt(2)
- * settings in json file
- *
+ finish settings.json add file creating iof not exists
+ make constants const int targetUPS = 200;
+const int targetFPS = 60;
+ blockc textures and simiral data in json
+  * realistic movement, i mean if i press w and a, i should be the same speeed as i would press w, not times sqrt(2) + simple physics
+ * player speed in settings shouldnt be a magic number
  *
  *
  *

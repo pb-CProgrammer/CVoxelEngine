@@ -1,9 +1,12 @@
+#include "settings.h"
 #include "window.h"
 #include "game.h"
 #include <stdio.h>
 
 int main()
 {
+    initSettings();
+
     //main function, that starts every important piece of game
     if(!windowInit())
     {

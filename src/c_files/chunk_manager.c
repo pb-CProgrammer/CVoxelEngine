@@ -18,23 +18,23 @@ void calculateDrawArea(float playerPosX, float playerPosZ, int* startChunkX, int
     float currentChunkX = playerPosX / (float)CHUNK_SIZE;
     float currentChunkZ = playerPosZ / (float)CHUNK_SIZE;
 
-    if(DRAW_AREA_IN_CHUNKS % 2 != 0)
+    if(drawAreaInChunks % 2 != 0)
     {
         //if draw area is odd, program just subtract 1 from it, and add to player pos in each direction
-        *startChunkX = (int)floor(currentChunkX) - (DRAW_AREA_IN_CHUNKS - 1) / 2;
-        *startChunkZ = (int)floor(currentChunkZ) - (DRAW_AREA_IN_CHUNKS - 1) / 2;
+        *startChunkX = (int)floor(currentChunkX) - (drawAreaInChunks - 1) / 2;
+        *startChunkZ = (int)floor(currentChunkZ) - (drawAreaInChunks - 1) / 2;
 
-        *endChunkX = (int)floor(currentChunkX) + (DRAW_AREA_IN_CHUNKS - 1) / 2;
-        *endChunkZ = (int)floor(currentChunkZ) + (DRAW_AREA_IN_CHUNKS - 1) / 2;
+        *endChunkX = (int)floor(currentChunkX) + (drawAreaInChunks - 1) / 2;
+        *endChunkZ = (int)floor(currentChunkZ) + (drawAreaInChunks - 1) / 2;
     }
     else
     {
         //else program first calculates square of chunks which for sure will be drawn
-        *startChunkX = (int)floor(currentChunkX) - (DRAW_AREA_IN_CHUNKS - 2) / 2;
-        *startChunkZ = (int)floor(currentChunkZ) - (DRAW_AREA_IN_CHUNKS - 2) / 2;
+        *startChunkX = (int)floor(currentChunkX) - (drawAreaInChunks - 2) / 2;
+        *startChunkZ = (int)floor(currentChunkZ) - (drawAreaInChunks - 2) / 2;
 
-        *endChunkX = (int)floor(currentChunkX) + (DRAW_AREA_IN_CHUNKS - 2) / 2;
-        *endChunkZ = (int)floor(currentChunkZ) + (DRAW_AREA_IN_CHUNKS - 2) / 2;
+        *endChunkX = (int)floor(currentChunkX) + (drawAreaInChunks - 2) / 2;
+        *endChunkZ = (int)floor(currentChunkZ) + (drawAreaInChunks - 2) / 2;
 
         //and based on player pos in chunk, program add 1 to side that is closer to player
         float offsetInChunkX, offsetInChunkZ;
@@ -178,7 +178,7 @@ void chunkManagerDraw(int startChunkX, int startChunkZ, int endChunkX, int endCh
 void chunkManagerInit()
 {
     chunkMap = kh_init(chunk_map);
-    open_simplex_noise(WORLD_SEED, &osn_ctx);
+    open_simplex_noise(worldSeed, &osn_ctx);
 };
 
 void chunkManagerExit()
