@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <linmath.h>
-#include "settings.h"
+#include "constants.h"
 
 //this is up vector, for view matrix
 vec3 absoluteUp = (vec3){0.0f, 1.0f, 0.0f};

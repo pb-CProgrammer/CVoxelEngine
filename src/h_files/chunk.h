@@ -1,7 +1,7 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-#include "settings.h"
+#include "constants.h"
 
 #include <glad.h>
 #include <linmath.h>

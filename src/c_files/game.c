@@ -4,16 +4,13 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <tinycthread.h>
-#include "settings.h"
+#include "constants.h"
 #include "window.h"
 #include "voxel_engine.h"
 
-const int targetUPS = 200;
-const int targetFPS = 60;
-
 //time per frame and update in nanoseconds
-const long timePerUpdate = 1000000000 / targetUPS;
-const long timePerFrame = 1000000000 / targetFPS;
+const long timePerUpdate = 1000000000 / TARGET_UPS;
+const long timePerFrame = 1000000000 / TARGET_FPS;
 
 //variable that shows if game loop is active or not
 bool gameRunning = true;

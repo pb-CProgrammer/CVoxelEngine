@@ -5,7 +5,7 @@
 
 int main()
 {
-    initSettings();
+    readSettings();
 
     //main function, that starts every important piece of game
     if(!windowInit())

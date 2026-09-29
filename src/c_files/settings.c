@@ -7,8 +7,6 @@
 
 int startWindowWidth;
 int startWindowHeight;
-int openglVersionMajor;
-int openglVersionMinor;
 const char* windowTitle;
 
 float mouseInputSensitivity;
@@ -25,8 +23,6 @@ void createDefaultSettings()
     //window/opengl stuff
     json_object_dotset_number(rootObject, "window.startWindowWidth", 800);
     json_object_dotset_number(rootObject, "window.startWindowHeight", 600);
-    json_object_dotset_number(rootObject, "window.openglVersionMajor", 4);
-    json_object_dotset_number(rootObject, "window.openglVersionMinor", 6);
     json_object_dotset_string(rootObject, "window.windowTitle", "CVoxelEngine");
 
     //player stuff
@@ -47,6 +43,12 @@ void createDefaultSettings()
 void readSettings()
 {
     const char* settingsData;
+
+    if(!readFile("settings.json", &settingsData))
+    {
+        createDefaultSettings();
+    }
+
     readFile("settings.json", &settingsData);
     
     JSON_Value *rootValue = json_parse_string(settingsData);
@@ -54,8 +56,6 @@ void readSettings()
 
     startWindowWidth = json_object_dotget_number(rootObject, "window.startWindowWidth");
     startWindowHeight = json_object_dotget_number(rootObject, "window.startWindowHeight");
-    openglVersionMajor = json_object_dotget_number(rootObject, "window.openglVersionMajor");
-    openglVersionMinor = json_object_dotget_number(rootObject, "window.openglVersionMinor");
     const char* tempWindowTitle = json_object_dotget_string(rootObject, "window.windowTitle");
     windowTitle = strdup(tempWindowTitle);
 
@@ -69,8 +69,3 @@ void readSettings()
 
     free((void*)settingsData);
 }
-
-void initSettings()
-{
-    readSettings();
-} 

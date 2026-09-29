@@ -1,9 +1,7 @@
 {
     "window": {
-        "startWindowWidth": 1280,
-        "startWindowHeight": 800,
-        "openglVersionMajor": 4,
-        "openglVersionMinor": 6,
+        "startWindowWidth": 800,
+        "startWindowHeight": 600,
         "windowTitle": "CVoxelEngine"
     },
     "player": {
@@ -11,11 +9,7 @@
         "playerSpeed": 0.10000000149011612
     },
     "game": {
-        "chunkSize": 16,
-        "chunkHeight": 128,
-        "texturesInAtlasWidth": 3,
-        "texturesInAtlasHeight": 2,
-        "drawAreaInChunks": 60,
-        "worldSeed": 283458
+        "drawAreaInChunks": 21,
+        "worldSeed": 123
     }
 }

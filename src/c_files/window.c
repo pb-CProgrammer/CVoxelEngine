@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "constants.h"
 #include "settings.h"
 #include "game.h"
 
@@ -36,8 +37,8 @@ bool windowInit()
 
     //everything here is from settings
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, openglVersionMajor);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, openglVersionMinor);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, OPENGL_VERSION_MAJOR);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, OPENGL_VERSION_MINOR);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);

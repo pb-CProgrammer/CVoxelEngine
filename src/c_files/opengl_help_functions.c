@@ -12,7 +12,7 @@ bool readFile(const char* fileLocation, const char** fileData)
     FILE* file = fopen(fileLocation, "r");
     if(file == NULL)
     {
-        printf("Failed to open file %s\n", fileLocation);
+        //printf("Failed to open file %s\n", fileLocation);
         return false;
     }
 

@@ -1,7 +1,7 @@
 #ifndef GAME_DATA_C
 #define GAME_DATA_C
 
-#include "settings.h"
+#include "constants.h"
 #include <linmath.h>
 
 //there is every data needed to run game, load everything.
