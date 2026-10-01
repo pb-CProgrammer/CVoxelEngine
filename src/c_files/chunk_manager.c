@@ -1,8 +1,11 @@
 #include "chunk_manager.h"
 
+#include "constants.h"
+#include "game_data.h"
 #include "settings.h"
 #include "math_help_functions.h"
 #include "chunk.h"
+#include <math.h>
 #include <osn-noise.h>
 #include <khash.h>
 
@@ -205,3 +208,51 @@ void chunkManagerExit()
 
     open_simplex_noise_free(osn_ctx);
 };
+
+bool isInsideBlock(float xPos, float yPos, float zPos)
+{
+    int chunkX = floorf(xPos / CHUNK_SIZE);
+    int chunkZ = floorf(zPos / CHUNK_SIZE);
+
+    int chunkXPos = 0;
+    int chunkZPos = 0;
+
+    if(chunkX >= 0)
+    {
+        chunkXPos = (int)xPos % CHUNK_SIZE;
+    }
+    else
+    {
+        chunkXPos = abs((int)floorf(xPos) % CHUNK_SIZE);
+        chunkXPos = CHUNK_SIZE - chunkXPos - 1;
+    }
+
+    if(chunkZ >= 0)
+    {
+        chunkZPos = (int)zPos % CHUNK_SIZE;
+    }
+    else
+    {
+        chunkZPos = abs((int)floorf(zPos) % CHUNK_SIZE);
+        chunkZPos = CHUNK_SIZE - chunkZPos - 1;
+    }
+
+    uint64_t key;
+    vec2ToHashKey(chunkX, chunkZ, &key);
+
+    khint_t foundChunk = kh_get(chunk_map, chunkMap, key);
+
+    if(foundChunk != kh_end(chunkMap))
+    {
+        Chunk* chunk = kh_value(chunkMap, foundChunk);
+
+        int index;
+        posToIndex((vec3){ chunkXPos, (int)yPos, chunkZPos }, &index);
+        if (chunk->chunkData[index] == AIR_BLOCK)
+        {
+            return false;
+        }
+    }
+    
+    return true;
+}

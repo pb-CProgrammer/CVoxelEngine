@@ -9,7 +9,7 @@
         "playerSpeed": 0.10000000149011612
     },
     "game": {
-        "drawAreaInChunks": 21,
-        "worldSeed": 123
+        "drawAreaInChunks": 31,
+        "worldSeed": 283458
     }
 }

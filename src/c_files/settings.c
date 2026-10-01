@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "parson.h"
+#include <parson.h>
 #include "opengl_help_functions.h"
 
 int startWindowWidth;
@@ -34,7 +34,7 @@ void createDefaultSettings()
     json_object_dotset_number(rootObject, "game.worldSeed", 283458);
 
     char *jsonText = json_serialize_to_string_pretty(rootValue);
-    writeFile("settings.json", jsonText);
+    writeFile("json_files/settings.json", jsonText);
 
     json_free_serialized_string(jsonText);
     json_value_free(rootValue);
@@ -44,12 +44,12 @@ void readSettings()
 {
     const char* settingsData;
 
-    if(!readFile("settings.json", &settingsData))
+    if(!readFile("json_files/settings.json", &settingsData))
     {
         createDefaultSettings();
     }
 
-    readFile("settings.json", &settingsData);
+    readFile("json_files/settings.json", &settingsData);
     
     JSON_Value *rootValue = json_parse_string(settingsData);
     JSON_Object *rootObject = json_value_get_object(rootValue);

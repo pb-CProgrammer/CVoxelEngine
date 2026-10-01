@@ -1,6 +1,5 @@
 #include "chunk.h"
 
-#include "settings.h"
 #include "game_data.h"
 #include "math_help_functions.h"
 #include <osn-noise.h>
@@ -37,7 +36,6 @@ void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
         arrpush(chunk->drawData, blockData[currentStride + 5]);
 
         //tex coords
-
         int blockIndex = chunk->chunkData[index] - 1;
         int textureIndex = blockSidesTextures[blockIndex][side];
 

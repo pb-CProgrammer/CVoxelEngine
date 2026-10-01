@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include <stdbool.h>
+#include <linmath.h>
 
 bool gameInit();
 bool startGameLoop();

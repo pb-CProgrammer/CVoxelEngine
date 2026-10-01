@@ -4,17 +4,19 @@
 #include <linmath.h>
 #include <GLFW/glfw3.h>
 #include "camera.h"
+#include "chunk_manager.h"
 #include "settings.h"
 #include "math_help_functions.h"
+#include "game.h"
 
 //small help function
-void updatePos(Player* player, bool key, float* dir, float speed)
+void updatePos(vec3 pos, bool key, float* dir, float speed)
 {
     if(key)
     {
         vec3 add_pos;
         vec3_scale(add_pos, dir, speed);
-        vec3_add(player->camera.pos, player->camera.pos, add_pos);
+        vec3_add(pos, pos, add_pos);
     }
 };
 
@@ -58,14 +60,23 @@ void playerUpdate(Player* player)
     forwardDir[2] = player->dir[2];
     vec3_norm(forwardDir, forwardDir);
 
+    vec3 addPos = { 0.0f, 0.0f, 0.0f };
     //every axis is seperated for easier transform of that function
-    updatePos(player, player->W, forwardDir, playerSpeed);
-    updatePos(player, player->S, forwardDir, -playerSpeed);
-    updatePos(player, player->A, player->right, playerSpeed);
-    updatePos(player, player->D, player->right, -playerSpeed);
-    updatePos(player, player->SPACE, absoluteUp, playerSpeed);
-    updatePos(player, player->SHIFT, absoluteUp, -playerSpeed);
+    updatePos(addPos, player->W, forwardDir, playerSpeed);
+    updatePos(addPos, player->S, forwardDir, -playerSpeed);
+    updatePos(addPos, player->A, player->right, playerSpeed);
+    updatePos(addPos, player->D, player->right, -playerSpeed);
+    updatePos(addPos, player->SPACE, absoluteUp, playerSpeed);
+    updatePos(addPos, player->SHIFT, absoluteUp, -playerSpeed);
 
+    vec3 tempPos;
+    vec3_add(tempPos, player->camera.pos, addPos);
+
+    if(!isInsideBlock(tempPos[0], tempPos[1], tempPos[2]))
+    {
+        vec3_add(player->camera.pos, player->camera.pos, addPos);
+    }
+    
     calculatePlayerData(player);
 };
 

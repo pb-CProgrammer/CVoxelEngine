@@ -11,15 +11,15 @@
 
 /*
  * TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- dinish moving from settings to CONSTANTS
- blockc textures and simiral data in json
+
   * realistic movement, i mean if i press w and a, i should be the same speeed as i would press w, not times sqrt(2) + simple physics
  * player speed in settings shouldnt be a magic number
  *
  *
  *
  *
- *
+ *potentially in far future
+  blockc textures and simiral data in json
  *
  */
 
