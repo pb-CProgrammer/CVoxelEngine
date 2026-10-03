@@ -11,6 +11,10 @@
 
 /*
  * TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+make chunk pos and inner chunk pos in math help fuctiomns
+player pos and hitbox in upodatePos function
+
+
 
   * realistic movement, i mean if i press w and a, i should be the same speeed as i would press w, not times sqrt(2) + simple physics
  * player speed in settings shouldnt be a magic number

@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <linmath.h>
 #include "constants.h"
 
@@ -41,7 +42,7 @@ void posToIndex(float* pos, int* index)
     //also safety check
     if(pos[0] < 0 || pos[0] >= CHUNK_SIZE || pos[1] < 0 || pos[1] >= CHUNK_HEIGHT || pos[2] < 0 || pos[2] >= CHUNK_SIZE)
     {
-        printf("chunk block pos is out of chunk\n");
+        printf("chunk block pos is out of chunk (%f, %f, %f)\n", pos[0], pos[1], pos[2]);
         return;
     }
 
@@ -61,4 +62,41 @@ void vec2ToHashKey(int x, int z, uint64_t* key)
     //this function just takes two 32 bit ints, and combine them into one 64 bit int
     //simplier saying if this function will take 12 and 34, it will make key 1234
     *key = ((uint64_t)(uint32_t)x << 32) | (uint32_t)z;
+}
+
+void posToChunkData(float* pos, int* chunkX, int* chunkZ, int* chunkXPos, int* chunkYPos, int* chunkZPos, bool* isChunkYPosOk)
+{
+    *chunkX = floorf(pos[0] / CHUNK_SIZE);
+    *chunkZ = floorf(pos[2] / CHUNK_SIZE);
+
+    if(*chunkX >= 0)
+    {
+        *chunkXPos = (int)pos[0] % CHUNK_SIZE;
+    }
+    else
+    {
+        *chunkXPos = abs((int)floorf(pos[0]) % CHUNK_SIZE);
+        *chunkXPos = CHUNK_SIZE - *chunkXPos - 1;
+    }
+
+    if(*chunkZ >= 0)
+    {
+        *chunkZPos = (int)pos[2] % CHUNK_SIZE;
+    }
+    else
+    {
+        *chunkZPos = abs((int)floorf(pos[2]) % CHUNK_SIZE);
+        *chunkZPos = CHUNK_SIZE - *chunkZPos - 1;
+    }
+
+    *chunkYPos = (int)pos[1];
+
+    if(*chunkYPos < 0 || *chunkYPos >= CHUNK_HEIGHT)
+    {
+        *isChunkYPosOk = false;
+    }
+    else
+    {
+        *isChunkYPosOk = true;
+    }
 }

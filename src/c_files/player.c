@@ -1,13 +1,15 @@
 #include "player.h"
 
 #include <stdbool.h>
+#include <stdlib.h>
+#include <math.h>
 #include <linmath.h>
-#include <GLFW/glfw3.h>
-#include "camera.h"
 #include "chunk_manager.h"
+#include <GLFW/glfw3.h>
+#include "game_data.h"
+#include "camera.h"
 #include "settings.h"
 #include "math_help_functions.h"
-#include "game.h"
 
 //small help function
 void updatePos(vec3 pos, bool key, float* dir, float speed)
@@ -72,7 +74,7 @@ void playerUpdate(Player* player)
     vec3 tempPos;
     vec3_add(tempPos, player->camera.pos, addPos);
 
-    if(!isInsideBlock(tempPos[0], tempPos[1], tempPos[2]))
+    if(canGoThere(tempPos))
     {
         vec3_add(player->camera.pos, player->camera.pos, addPos);
     }
@@ -152,3 +154,31 @@ void processPlayerKeyboardInput(Player* player, int key, int action)
         break;
     }
 };
+
+bool canGoThere(float* pos)
+{
+    int chunkX, chunkZ;
+    int chunkXPos, chunkYPos, chunkZPos;
+    bool isChunkYPosOk;
+
+    posToChunkData(pos, &chunkX, &chunkZ, &chunkXPos, &chunkYPos, &chunkZPos, &isChunkYPosOk);
+
+    if(!isChunkYPosOk)
+    {
+        return false;
+    }
+
+    Chunk* chunk = getChunk(chunkX, chunkZ);
+
+    if(chunk != NULL)
+    {
+        int index;
+        posToIndex((vec3){ chunkXPos, chunkYPos, chunkZPos }, &index);
+        if (chunk->chunkData[index] == AIR_BLOCK)
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}

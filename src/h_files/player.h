@@ -31,5 +31,6 @@ bool playerInit(Player* player, float* pos, float yaw, float pitch, float FOV);
 void calculatePlayerData(Player* player);
 void processPlayerMouseInput(Player* player, float xPos, float yPos);
 void processPlayerKeyboardInput(Player* player, int key, int action);
+bool canGoThere(float* pos);
 
 #endif
