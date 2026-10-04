@@ -11,9 +11,10 @@
 
 /*
  * TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-make chunk pos and inner chunk pos in math help fuctiomns
-player pos and hitbox in upodatePos function
-
+make player able to go above y > 128
+improve collision ( make player not stop with gap and change collision between axis)
+separate calculateplayerData
+make normal numbers in json
 
 
   * realistic movement, i mean if i press w and a, i should be the same speeed as i would press w, not times sqrt(2) + simple physics

@@ -3,11 +3,13 @@
 
 #include <stdbool.h>
 #include "camera.h"
+#include "constants.h"
 
-//this is expanded version of camera class with all utilities
 typedef struct Player
 {
-    Camera camera;
+    Camera camera; //player owns camera which is player's eyes
+    vec3 pos; //playerPos is in pos of player legs
+    vec3 hitbox[HITBOX_VERTICES]; //8 vertices of hitbox
     vec3 dir;
     vec3 right;
     vec3 target;
@@ -31,6 +33,5 @@ bool playerInit(Player* player, float* pos, float yaw, float pitch, float FOV);
 void calculatePlayerData(Player* player);
 void processPlayerMouseInput(Player* player, float xPos, float yPos);
 void processPlayerKeyboardInput(Player* player, int key, int action);
-bool canGoThere(float* pos);
 
 #endif

@@ -9,6 +9,9 @@ extern const char* windowTitle;
 //player settings
 extern float mouseInputSensitivity;
 extern float playerSpeed;
+extern float playerHitboxSize;
+extern float playerHitboxHeight;
+extern float playerCameraHeight;
 
 //game settings
 extern int drawAreaInChunks;

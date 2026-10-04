@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debuguj projekt C (LLDB)",
+            // Zmiana typu na lldb, który jest w pełni wspierany w VSCodium:
+            "type": "lldb",
+            "request": "launch",
+            // Pobieranie ścieżki z rozszerzenia CMake Tools:
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            // Automatyczne przebudowanie projektu przed uruchomieniem:
+            "preLaunchTask": "CMake: build"
+        }
+    ]
+}

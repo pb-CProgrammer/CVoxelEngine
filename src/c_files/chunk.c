@@ -84,7 +84,8 @@ void generateChunk(Chunk* chunk)
         {
             //program calculates height of block pillar in chunk, and select blocks based on it
             float multiplyer = 0.01f;
-            int height = CHUNK_HEIGHT * (open_simplex_noise2(osn_ctx, (x + chunk->pos[0] * CHUNK_SIZE) * multiplyer, (z + chunk->pos[1] * CHUNK_SIZE) * multiplyer) * 0.5f + 0.5f);
+            int height = 0.1f * CHUNK_HEIGHT * (open_simplex_noise2(osn_ctx, (x + chunk->pos[0] * CHUNK_SIZE) * multiplyer, (z + chunk->pos[1] * CHUNK_SIZE) * multiplyer) * 0.5f + 0.5f);
+            height *= 4;
 
             for(int y = 0; y < CHUNK_HEIGHT; y++)
             {

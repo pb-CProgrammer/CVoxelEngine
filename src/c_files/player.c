@@ -2,17 +2,19 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <math.h>
 #include <linmath.h>
 #include "chunk_manager.h"
 #include <GLFW/glfw3.h>
+#include "constants.h"
 #include "game_data.h"
 #include "camera.h"
 #include "settings.h"
 #include "math_help_functions.h"
 
+#include <stdio.h>
+
 //small help function
-void updatePos(vec3 pos, bool key, float* dir, float speed)
+void updateTempPos(vec3 pos, bool key, float* dir, float speed)
 {
     if(key)
     {
@@ -21,6 +23,93 @@ void updatePos(vec3 pos, bool key, float* dir, float speed)
         vec3_add(pos, pos, add_pos);
     }
 };
+
+void setHitboxPos(vec3 hitbox[HITBOX_VERTICES], vec3 pos)
+{
+    //upper hitbox vertices
+    vec3_set((vec3){ pos[0] + playerHitboxSize, pos[1], pos[2] + playerHitboxSize}, hitbox[0]);
+    vec3_set((vec3){ pos[0] + playerHitboxSize, pos[1], pos[2] - playerHitboxSize}, hitbox[1]);
+    vec3_set((vec3){ pos[0] - playerHitboxSize, pos[1], pos[2] + playerHitboxSize}, hitbox[2]);
+    vec3_set((vec3){ pos[0] - playerHitboxSize, pos[1], pos[2] - playerHitboxSize}, hitbox[3]);
+
+    //upper hitbox vertices
+    vec3_set((vec3){ pos[0] + playerHitboxSize, pos[1] + playerHitboxHeight, pos[2] + playerHitboxSize}, hitbox[4]);
+    vec3_set((vec3){ pos[0] + playerHitboxSize, pos[1] + playerHitboxHeight, pos[2] - playerHitboxSize}, hitbox[5]);
+    vec3_set((vec3){ pos[0] - playerHitboxSize, pos[1] + playerHitboxHeight, pos[2] + playerHitboxSize}, hitbox[6]);
+    vec3_set((vec3){ pos[0] - playerHitboxSize, pos[1] + playerHitboxHeight, pos[2] - playerHitboxSize}, hitbox[7]);
+}
+
+bool canGoThere(float* pos)
+{
+    int chunkX, chunkZ;
+    int chunkXPos, chunkYPos, chunkZPos;
+    bool isChunkYPosOk;
+
+    posToChunkData(pos, &chunkX, &chunkZ, &chunkXPos, &chunkYPos, &chunkZPos, &isChunkYPosOk);
+
+    if(!isChunkYPosOk)
+    {
+        return false;
+    }
+
+    Chunk* chunk = getChunk(chunkX, chunkZ);
+
+    if(chunk != NULL)
+    {
+        int index;
+        posToIndex((vec3){ chunkXPos, chunkYPos, chunkZPos }, &index);
+        if (chunk->chunkData[index] == AIR_BLOCK)
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+void updatePlayerPos(Player* player)
+{
+    //forward dir doesnt include Y
+    vec3 forwardDir;
+    forwardDir[0] = player->dir[0];
+    forwardDir[1] = 0.0f;
+    forwardDir[2] = player->dir[2];
+    vec3_norm(forwardDir, forwardDir);
+
+    vec3 addPos = { 0.0f, 0.0f, 0.0f };
+    //every axis is seperated for easier transform of that function
+    updateTempPos(addPos, player->W, forwardDir, playerSpeed);
+    updateTempPos(addPos, player->S, forwardDir, -playerSpeed);
+    updateTempPos(addPos, player->A, player->right, playerSpeed);
+    updateTempPos(addPos, player->D, player->right, -playerSpeed);
+    updateTempPos(addPos, player->SPACE, absoluteUp, playerSpeed);
+    updateTempPos(addPos, player->SHIFT, absoluteUp, -playerSpeed);
+
+    bool canGo = true;
+
+    for(int i = 0; i < HITBOX_VERTICES; i++)
+    {
+        vec3 tempPos;
+        vec3_add(tempPos, player->hitbox[i], addPos);
+
+        if(!canGoThere(tempPos))
+        {
+            canGo = false;
+        }
+    }
+
+    if(canGo)
+    {
+        vec3_add(player->pos, player->pos, addPos);
+        setHitboxPos(player->hitbox, player->pos);
+    }
+
+    player->camera.pos[0] = player->pos[0];
+    player->camera.pos[1] = player->pos[1] + playerCameraHeight;
+    player->camera.pos[2] = player->pos[2]; //should be in calculatePlayerData !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    calculatePlayerData(player);
+}
 
 void playerUpdate(Player* player)
 {
@@ -55,43 +144,25 @@ void playerUpdate(Player* player)
 
     calculatePlayerData(player);
 
-    //forward dir doesnt include Y
-    vec3 forwardDir;
-    forwardDir[0] = player->dir[0];
-    forwardDir[1] = 0.0f;
-    forwardDir[2] = player->dir[2];
-    vec3_norm(forwardDir, forwardDir);
-
-    vec3 addPos = { 0.0f, 0.0f, 0.0f };
-    //every axis is seperated for easier transform of that function
-    updatePos(addPos, player->W, forwardDir, playerSpeed);
-    updatePos(addPos, player->S, forwardDir, -playerSpeed);
-    updatePos(addPos, player->A, player->right, playerSpeed);
-    updatePos(addPos, player->D, player->right, -playerSpeed);
-    updatePos(addPos, player->SPACE, absoluteUp, playerSpeed);
-    updatePos(addPos, player->SHIFT, absoluteUp, -playerSpeed);
-
-    vec3 tempPos;
-    vec3_add(tempPos, player->camera.pos, addPos);
-
-    if(canGoThere(tempPos))
-    {
-        vec3_add(player->camera.pos, player->camera.pos, addPos);
-    }
-    
-    calculatePlayerData(player);
+    updatePlayerPos(player);
 };
 
 //this function inits player struct with starting values
 bool playerInit(Player* player, float* pos, float yaw, float pitch, float FOV)
 {
-    player->camera.pos[0] = pos[0];
-    player->camera.pos[1] = pos[1];
-    player->camera.pos[2] = pos[2];
+    player->pos[0] = pos[0];
+    player->pos[1] = pos[1];
+    player->pos[2] = pos[2];
 
     player->camera.yaw = yaw;
     player->camera.pitch = pitch;
     player->camera.FOV = FOV;
+
+    setHitboxPos(player->hitbox, pos);
+
+    player->camera.pos[0] = pos[0];
+    player->camera.pos[1] = pos[1] + playerHitboxHeight;
+    player->camera.pos[2] = pos[2];
 
     player->mouseFirstMove = true;
 
@@ -152,33 +223,7 @@ void processPlayerKeyboardInput(Player* player, int key, int action)
         break;
         case GLFW_KEY_LEFT_SHIFT: setKeyBool(&player->SHIFT, action);
         break;
+        case GLFW_KEY_Q: print_vec3(player->camera.pos);
+        break;
     }
 };
-
-bool canGoThere(float* pos)
-{
-    int chunkX, chunkZ;
-    int chunkXPos, chunkYPos, chunkZPos;
-    bool isChunkYPosOk;
-
-    posToChunkData(pos, &chunkX, &chunkZ, &chunkXPos, &chunkYPos, &chunkZPos, &isChunkYPosOk);
-
-    if(!isChunkYPosOk)
-    {
-        return false;
-    }
-
-    Chunk* chunk = getChunk(chunkX, chunkZ);
-
-    if(chunk != NULL)
-    {
-        int index;
-        posToIndex((vec3){ chunkXPos, chunkYPos, chunkZPos }, &index);
-        if (chunk->chunkData[index] == AIR_BLOCK)
-        {
-            return true;
-        }
-    }
-    
-    return false;
-}

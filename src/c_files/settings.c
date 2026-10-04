@@ -11,6 +11,9 @@ const char* windowTitle;
 
 float mouseInputSensitivity;
 float playerSpeed;
+float playerHitboxSize;
+float playerHitboxHeight;
+float playerCameraHeight;
 
 int drawAreaInChunks;
 int worldSeed;
@@ -28,6 +31,9 @@ void createDefaultSettings()
     //player stuff
     json_object_dotset_number(rootObject, "player.mouseInputSensitivity", 0.1f);
     json_object_dotset_number(rootObject, "player.playerSpeed", 0.1f);
+    json_object_dotset_number(rootObject, "player.playerHitboxSize", 0.35f);
+    json_object_dotset_number(rootObject, "player.playerHitboxHeight", 1.8f);
+    json_object_dotset_number(rootObject, "player.playerCameraHeight", 1.7f);
 
     //voxel engine stuff
     json_object_dotset_number(rootObject, "game.drawAreaInChunks", 31);
@@ -61,6 +67,9 @@ void readSettings()
 
     mouseInputSensitivity = json_object_dotget_number(rootObject, "player.mouseInputSensitivity");
     playerSpeed = json_object_dotget_number(rootObject, "player.playerSpeed");
+    playerHitboxSize = json_object_dotget_number(rootObject, "player.playerHitboxSize");
+    playerHitboxHeight = json_object_dotget_number(rootObject, "player.playerHitboxHeight");
+    playerCameraHeight = json_object_dotget_number(rootObject, "player.playerCameraHeight");
 
     drawAreaInChunks = json_object_dotget_number(rootObject, "game.drawAreaInChunks");
     worldSeed = json_object_dotget_number(rootObject, "game.worldSeed");

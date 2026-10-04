@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <linmath.h>
 #include "constants.h"
 
@@ -66,30 +65,16 @@ void vec2ToHashKey(int x, int z, uint64_t* key)
 
 void posToChunkData(float* pos, int* chunkX, int* chunkZ, int* chunkXPos, int* chunkYPos, int* chunkZPos, bool* isChunkYPosOk)
 {
-    *chunkX = floorf(pos[0] / CHUNK_SIZE);
-    *chunkZ = floorf(pos[2] / CHUNK_SIZE);
+    *chunkX = (int)floorf(pos[0] / CHUNK_SIZE);
+    *chunkZ = (int)floorf(pos[2] / CHUNK_SIZE);
 
-    if(*chunkX >= 0)
-    {
-        *chunkXPos = (int)pos[0] % CHUNK_SIZE;
-    }
-    else
-    {
-        *chunkXPos = abs((int)floorf(pos[0]) % CHUNK_SIZE);
-        *chunkXPos = CHUNK_SIZE - *chunkXPos - 1;
-    }
+    int worldBlockX = (int)floorf(pos[0]);
+    int worldBlockZ = (int)floorf(pos[2]);
 
-    if(*chunkZ >= 0)
-    {
-        *chunkZPos = (int)pos[2] % CHUNK_SIZE;
-    }
-    else
-    {
-        *chunkZPos = abs((int)floorf(pos[2]) % CHUNK_SIZE);
-        *chunkZPos = CHUNK_SIZE - *chunkZPos - 1;
-    }
-
-    *chunkYPos = (int)pos[1];
+    *chunkXPos = worldBlockX - (*chunkX * CHUNK_SIZE);
+    *chunkZPos = worldBlockZ - (*chunkZ * CHUNK_SIZE);
+    
+    *chunkYPos = (int)floorf(pos[1]);
 
     if(*chunkYPos < 0 || *chunkYPos >= CHUNK_HEIGHT)
     {

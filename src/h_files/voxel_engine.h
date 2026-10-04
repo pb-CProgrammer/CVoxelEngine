@@ -2,7 +2,6 @@
 #define VOXEL_ENGINE_H
 
 #include <stdbool.h>
-#include "linmath.h"
 #include "player.h"
 
 //this is to fix race condition problem in my program
