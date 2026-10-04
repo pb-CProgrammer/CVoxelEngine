@@ -12,7 +12,7 @@
 /*
  * TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 make player able to go above y > 128
-improve collision ( make player not stop with gap and change collision between axis)
+improve collision ( make player not stop with gap)
 separate calculateplayerData
 make normal numbers in json
 
@@ -92,7 +92,7 @@ bool voxelEngineInit()
 
     glUniform1i(uniLoc(shaderProgram, "texture_atlas"), 0);
 
-    playerInit(&player, (vec3){0.0f, 100.0f, 0.0f}, 90.0f, 0.0f, 90.0f);
+    playerInit(&player, (vec3){0.0f, 40.0f, 0.0f}, 90.0f, 0.0f, 90.0f);
     calculatePlayerData(&player);
 
     chunkManagerInit();

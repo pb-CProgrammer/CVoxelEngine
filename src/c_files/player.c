@@ -67,6 +67,7 @@ bool canGoThere(float* pos)
     return false;
 }
 
+// this function updates player pos and does collision math
 void updatePlayerPos(Player* player)
 {
     //forward dir doesnt include Y
@@ -85,28 +86,34 @@ void updatePlayerPos(Player* player)
     updateTempPos(addPos, player->SPACE, absoluteUp, playerSpeed);
     updateTempPos(addPos, player->SHIFT, absoluteUp, -playerSpeed);
 
-    bool canGo = true;
-
-    for(int i = 0; i < HITBOX_VERTICES; i++)
+    for (int i = 0; i < 3; i++)
     {
-        vec3 tempPos;
-        vec3_add(tempPos, player->hitbox[i], addPos);
+        bool canGo = true;
 
-        if(!canGoThere(tempPos))
+        vec3 tempAddPos = { 0.0f, 0.0f, 0.0f };
+        tempAddPos[i] += addPos[i];
+
+        for(int j = 0; j < HITBOX_VERTICES; j++)
         {
-            canGo = false;
+            vec3 tempPos;
+            vec3_add(tempPos, player->hitbox[j], tempAddPos);
+
+            if(!canGoThere(tempPos))
+            {
+                canGo = false;
+            }
+        }
+
+        if(canGo)
+        {
+            vec3_add(player->pos, player->pos, tempAddPos);
+            setHitboxPos(player->hitbox, player->pos);
         }
     }
 
-    if(canGo)
-    {
-        vec3_add(player->pos, player->pos, addPos);
-        setHitboxPos(player->hitbox, player->pos);
-    }
-
-    player->camera.pos[0] = player->pos[0];
-    player->camera.pos[1] = player->pos[1] + playerCameraHeight;
-    player->camera.pos[2] = player->pos[2]; //should be in calculatePlayerData !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    player->camera.pos[0] = player->pos[0];//should be in calculatePlayerData !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    player->camera.pos[1] = player->pos[1] + playerCameraHeight;//
+    player->camera.pos[2] = player->pos[2]; //
     
     calculatePlayerData(player);
 }
