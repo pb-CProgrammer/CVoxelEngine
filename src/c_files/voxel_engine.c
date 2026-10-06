@@ -11,8 +11,6 @@
 
 /*
  * TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-make player able to go above y > 128
-improve collision ( make player not stop with gap)
 separate calculateplayerData
 make normal numbers in json
 

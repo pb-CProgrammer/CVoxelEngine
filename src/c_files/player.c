@@ -1,5 +1,6 @@
 #include "player.h"
 
+#include <math.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <linmath.h>
@@ -39,18 +40,15 @@ void setHitboxPos(vec3 hitbox[HITBOX_VERTICES], vec3 pos)
     vec3_set((vec3){ pos[0] - playerHitboxSize, pos[1] + playerHitboxHeight, pos[2] - playerHitboxSize}, hitbox[7]);
 }
 
-bool canGoThere(float* pos)
+bool canGoThere(float* pos, bool *isChunkYPosOk)
 {
     int chunkX, chunkZ;
     int chunkXPos, chunkYPos, chunkZPos;
-    bool isChunkYPosOk;
 
-    posToChunkData(pos, &chunkX, &chunkZ, &chunkXPos, &chunkYPos, &chunkZPos, &isChunkYPosOk);
+    posToChunkData(pos, &chunkX, &chunkZ, &chunkXPos, &chunkYPos, &chunkZPos, isChunkYPosOk);
 
-    if(!isChunkYPosOk)
-    {
-        return false;
-    }
+    if(!*isChunkYPosOk)
+        return true;
 
     Chunk* chunk = getChunk(chunkX, chunkZ);
 
@@ -88,8 +86,6 @@ void updatePlayerPos(Player* player)
 
     for (int i = 0; i < 3; i++)
     {
-        bool canGo = true;
-
         vec3 tempAddPos = { 0.0f, 0.0f, 0.0f };
         tempAddPos[i] += addPos[i];
 
@@ -98,17 +94,24 @@ void updatePlayerPos(Player* player)
             vec3 tempPos;
             vec3_add(tempPos, player->hitbox[j], tempAddPos);
 
-            if(!canGoThere(tempPos))
+            bool canGo, isChunkYPosOk;
+            canGo = canGoThere(tempPos, &isChunkYPosOk);
+
+            if(!canGo)
             {
-                canGo = false;
+                if(tempAddPos[i] >= 0.0f)
+                {
+                    tempAddPos[i] = floorf(tempAddPos[i]);
+                }
+                else
+                {
+                    tempAddPos[i] = ceilf(tempAddPos[i]);
+                }
             }
         }
 
-        if(canGo)
-        {
-            vec3_add(player->pos, player->pos, tempAddPos);
-            setHitboxPos(player->hitbox, player->pos);
-        }
+        vec3_add(player->pos, player->pos, tempAddPos);
+        setHitboxPos(player->hitbox, player->pos);
     }
 
     player->camera.pos[0] = player->pos[0];//should be in calculatePlayerData !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
