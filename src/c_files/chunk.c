@@ -1,5 +1,6 @@
 #include "chunk.h"
 
+#include "constants.h"
 #include "game_data.h"
 #include "math_help_functions.h"
 #include <osn-noise.h>
@@ -36,7 +37,7 @@ void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
         arrpush(chunk->drawData, blockData[currentStride + 5]);
 
         //tex coords
-        int blockIndex = chunk->chunkData[index] - 1;
+        int blockIndex = chunk->chunkData[index] - TRANSPARENT_BLOCKS + 1;
         int textureIndex = blockSidesTextures[blockIndex][side];
 
         //there program treats texturePos as pos on tile map and later we normalize it for shader program
@@ -109,6 +110,16 @@ void generateChunk(Chunk* chunk)
                     chunk->chunkData[index] = STONE_BLOCK;
                 }
             }
+
+            if (x + chunk->pos[0] * CHUNK_SIZE == 30 && z + chunk->pos[1] * CHUNK_SIZE == 30)
+            {
+                for(int y = 0; y < CHUNK_HEIGHT; y++)
+                {
+                    int index;
+                    posToIndex((vec3){x, y, z}, &index);
+                    chunk->chunkData[index] = WATER_BLOCK;
+                }
+            }
         }
     }
 };
@@ -129,7 +140,7 @@ void checkNegativeSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float*
         tempPos[axe] = CHUNK_SIZE - 1;
         posToIndex(tempPos, &tempIndex);
 
-        if(neighbourChunk->chunkData[tempIndex] == AIR_BLOCK)
+        if(neighbourChunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
         {
             addBlockSide(currentChunk, side, blockPos, index);
         }
@@ -142,7 +153,7 @@ void checkNegativeSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float*
         tempPos[axe]--;
         posToIndex(tempPos, &tempIndex);
 
-        if(currentChunk->chunkData[tempIndex] == AIR_BLOCK)
+        if(currentChunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
         {
             addBlockSide(currentChunk, side, blockPos, index);
         }
@@ -164,7 +175,7 @@ void checkPositiveSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float*
         tempPos[axe] = 0.0f;
         posToIndex(tempPos, &tempIndex);
 
-        if(neighbourChunk->chunkData[tempIndex] == AIR_BLOCK)
+        if(neighbourChunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
         {
             addBlockSide(currentChunk, side, blockPos, index);
         }
@@ -176,7 +187,7 @@ void checkPositiveSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float*
         tempPos[axe]++;
         posToIndex(tempPos, &tempIndex);
 
-        if(currentChunk->chunkData[tempIndex] == AIR_BLOCK)
+        if(currentChunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
         {
             addBlockSide(currentChunk, side, blockPos, index);
         }
@@ -193,7 +204,7 @@ void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chu
         vec3 blockPos;
         indexToPos(index, blockPos);
 
-        if(chunk->chunkData[index] > 0)
+        if(chunk->chunkData[index] > TRANSPARENT_BLOCKS - 1)
         {
             //WEST
             checkNegativeSideOfBlock(chunk, westChunk, blockPos, index, WEST_SIDE, 0);
@@ -225,7 +236,7 @@ void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chu
                 tempPos[1]++;
                 posToIndex(tempPos, &tempIndex);
 
-                if(chunk->chunkData[tempIndex] == AIR_BLOCK)
+                if(chunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
                 {
                     addBlockSide(chunk, TOP_SIDE, blockPos, index);
                 }
@@ -243,7 +254,7 @@ void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chu
                 tempPos[1]--;
                 posToIndex(tempPos, &tempIndex);
 
-                if(chunk->chunkData[tempIndex] == AIR_BLOCK)
+                if(chunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
                 {
                     addBlockSide(chunk, BOTTOM_SIDE, blockPos, index);
                 }
@@ -252,6 +263,7 @@ void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chu
             }
         }
     }
+
 
     //and program pass number of vertices to chunk, for more optimized rendering, and program marks chunk as draw data generated
     chunk->vertices = arrlen(chunk->drawData) / 6;

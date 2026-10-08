@@ -1,7 +1,7 @@
 {
     "window": {
-        "startWindowWidth": 800,
-        "startWindowHeight": 600,
+        "startWindowWidth": 1280,
+        "startWindowHeight": 800,
         "windowTitle": "CVoxelEngine"
     },
     "player": {

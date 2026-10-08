@@ -26,18 +26,20 @@ typedef enum
     DIRT_TEXTURE = 2,
     STONE_TEXTURE = 3,
     GRASS_TOP_TEXTURE = 4,
-    SAND_TEXTURE = 5
+    SAND_TEXTURE = 5,
+    WATER_TEXTURE = 6
 } Texture;
 
 //every block with coresponding id
 typedef enum
 {
     AIR_BLOCK = 0,
-    DIRT_BLOCK = 1,
-    FLOWER_GRASS_BLOCK = 2,
-    STONE_BLOCK = 3,
-    GRASS_BLOCK = 4,
-    SAND_BLOCK = 5
+    WATER_BLOCK = 1,
+    DIRT_BLOCK = 2,
+    FLOWER_GRASS_BLOCK = 3,
+    STONE_BLOCK = 4,
+    GRASS_BLOCK = 5,
+    SAND_BLOCK = 6
 } Block;
 
 //program declares data arrays

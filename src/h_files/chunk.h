@@ -16,8 +16,11 @@ typedef struct Chunk
     vec2 pos;
     uint8_t chunkData[CHUNK_VOLUME];
     float* drawData;
+    float* transparentDrawData;
     GLuint VBO, VAO;
+    GLuint tVBO, tVAO;
     unsigned int vertices;
+    unsigned int transparentVertices;
     bool generatedDrawData;
     bool compiledDrawData;
 } Chunk;
