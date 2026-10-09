@@ -37,7 +37,7 @@ void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
         arrpush(chunk->drawData, blockData[currentStride + 5]);
 
         //tex coords
-        int blockIndex = chunk->chunkData[index] - TRANSPARENT_BLOCKS + 1;
+        int blockIndex = chunk->chunkData[index] - 1; // - 1 because index = 0 is AIR_BLOCK, but block index = 0 is NOT air
         int textureIndex = blockSidesTextures[blockIndex][side];
 
         //there program treats texturePos as pos on tile map and later we normalize it for shader program
@@ -124,8 +124,10 @@ void generateChunk(Chunk* chunk)
     }
 };
 
-void checkNegativeSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float* blockPos, int index, Side side, int axe)
+void checkNegativeSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float* blockPos, int index, Side side, int axis, int discardBlocksIndex)
 {
+    //discardBlocksIndex is a block index above which nearby faces aren't draw 
+
     //program makes temporary version of variables
     vec3 tempPos;
     vec3_set(blockPos, tempPos);
@@ -133,36 +135,36 @@ void checkNegativeSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float*
     int tempIndex = index;
 
     //at first program checks if it will be checking face in direction inside or outside of chunk
-    if(tempPos[axe] - 1 < 0)
+    if(tempPos[axis] - 1 < 0)
     {
         //outside of the chunk,
         //there program gets pos of touching block of neightbour chunk and if its the air block program adds face to be drawn
-        tempPos[axe] = CHUNK_SIZE - 1;
+        tempPos[axis] = CHUNK_SIZE - 1;
         posToIndex(tempPos, &tempIndex);
 
-        if(neighbourChunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
+        if(neighbourChunk->chunkData[tempIndex] <= discardBlocksIndex)
         {
             addBlockSide(currentChunk, side, blockPos, index);
         }
 
-        tempPos[axe] = 0.0f;
+        tempPos[axis] = 0.0f;
     }
     else
     {
         //inside the chunk program do the same as the outside
-        tempPos[axe]--;
+        tempPos[axis]--;
         posToIndex(tempPos, &tempIndex);
 
-        if(currentChunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
+        if(currentChunk->chunkData[tempIndex] <= discardBlocksIndex)
         {
             addBlockSide(currentChunk, side, blockPos, index);
         }
 
-        tempPos[axe]++;
+        tempPos[axis]++;
     }
 }
 
-void checkPositiveSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float* blockPos, int index, Side side, int axe)
+void checkPositiveSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float* blockPos, int index, Side side, int axis, int discardBlocksIndex)
 {
     //the program do the same as in the method above, but in opposite way
     vec3 tempPos;
@@ -170,29 +172,29 @@ void checkPositiveSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float*
 
     int tempIndex = index;
 
-    if(tempPos[axe] + 1 >= CHUNK_SIZE)
+    if(tempPos[axis] + 1 >= CHUNK_SIZE)
     {
-        tempPos[axe] = 0.0f;
+        tempPos[axis] = 0.0f;
         posToIndex(tempPos, &tempIndex);
 
-        if(neighbourChunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
+        if(neighbourChunk->chunkData[tempIndex] <= discardBlocksIndex)
         {
             addBlockSide(currentChunk, side, blockPos, index);
         }
 
-        tempPos[axe] = CHUNK_SIZE - 1;
+        tempPos[axis] = CHUNK_SIZE - 1;
     }
     else
     {
-        tempPos[axe]++;
+        tempPos[axis]++;
         posToIndex(tempPos, &tempIndex);
 
-        if(currentChunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
+        if(currentChunk->chunkData[tempIndex] <= discardBlocksIndex)
         {
             addBlockSide(currentChunk, side, blockPos, index);
         }
 
-        tempPos[axe]--;
+        tempPos[axis]--;
     }
 }
 
@@ -204,19 +206,29 @@ void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chu
         vec3 blockPos;
         indexToPos(index, blockPos);
 
-        if(chunk->chunkData[index] > TRANSPARENT_BLOCKS - 1)
+        if(chunk->chunkData[index] > 0)
         {
+            int discardBlocksIndex;
+            if(chunk->chunkData[index] > TRANSPARENT_BLOCKS - 1)
+            {
+                discardBlocksIndex = WATER_BLOCK;
+            }
+            else
+            {
+                discardBlocksIndex = AIR_BLOCK;
+            }
+
             //WEST
-            checkNegativeSideOfBlock(chunk, westChunk, blockPos, index, WEST_SIDE, 0);
+            checkNegativeSideOfBlock(chunk, westChunk, blockPos, index, WEST_SIDE, 0, discardBlocksIndex);
 
             //SOUTH
-            checkPositiveSideOfBlock(chunk, southChunk, blockPos, index, SOUTH_SIDE, 2);
+            checkPositiveSideOfBlock(chunk, southChunk, blockPos, index, SOUTH_SIDE, 2, discardBlocksIndex);
 
             //EAST
-            checkPositiveSideOfBlock(chunk, eastChunk, blockPos, index, EAST_SIDE, 0);
+            checkPositiveSideOfBlock(chunk, eastChunk, blockPos, index, EAST_SIDE, 0, discardBlocksIndex);
 
             //NORTH
-            checkNegativeSideOfBlock(chunk, northChunk, blockPos, index, NORTH_SIDE, 2);
+            checkNegativeSideOfBlock(chunk, northChunk, blockPos, index, NORTH_SIDE, 2, discardBlocksIndex);
 
             //we make temporary version of variables
             vec3 tempPos;
