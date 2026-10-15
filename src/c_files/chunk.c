@@ -16,9 +16,27 @@ void chunkDraw(Chunk* chunk)
     glDrawArrays(GL_TRIANGLES, 0, chunk->vertices);
 }
 
+void chunkDrawTransparent(Chunk* chunk)
+{
+    glBindVertexArray(chunk->tVAO);
+    glDrawArrays(GL_TRIANGLES, 0, chunk->tVertices);
+}
+
+
 //this function push Block face data to chunk.drawData, those are data to create VBO, VAO and draw chunk
 void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
 {
+    float** drawData; //save faces to normal draw data or transparent draw data
+    if(chunk->chunkData[index] < TRANSPARENT_BLOCKS)
+    {
+        drawData = &chunk->tDrawData;
+    }
+    else
+    {
+        drawData = &chunk->drawData;
+    }
+
+
     for(int i = 0; i < 6; i++)
     {
         //on which stride from blockData program is
@@ -27,14 +45,14 @@ void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
         //there program pushes those data and  optionally adds some thing to them
 
         //vertex pos with chunk offset
-        arrpush(chunk->drawData, blockData[currentStride + 0] + chunk->pos[0] * CHUNK_SIZE + blockPos[0]);
-        arrpush(chunk->drawData, blockData[currentStride + 1] + blockPos[1]);
-        arrpush(chunk->drawData, blockData[currentStride + 2] + chunk->pos[1] * CHUNK_SIZE + blockPos[2]);
+        arrpush(*drawData, blockData[currentStride + 0] + chunk->pos[0] * CHUNK_SIZE + blockPos[0]);
+        arrpush(*drawData, blockData[currentStride + 1] + blockPos[1]);
+        arrpush(*drawData, blockData[currentStride + 2] + chunk->pos[1] * CHUNK_SIZE + blockPos[2]);
 
         //normals
-        arrpush(chunk->drawData, blockData[currentStride + 3]);
-        arrpush(chunk->drawData, blockData[currentStride + 4]);
-        arrpush(chunk->drawData, blockData[currentStride + 5]);
+        arrpush(*drawData, blockData[currentStride + 3]);
+        arrpush(*drawData, blockData[currentStride + 4]);
+        arrpush(*drawData, blockData[currentStride + 5]);
 
         //tex coords
         int blockIndex = chunk->chunkData[index] - 1; // - 1 because index = 0 is AIR_BLOCK, but block index = 0 is NOT air
@@ -55,7 +73,7 @@ void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
         }
 
         //program combines those two and that is final result
-        arrpush(chunk->drawData, normalizedTexturePos + textureCorrection);
+        arrpush(*drawData, normalizedTexturePos + textureCorrection);
 
         //there everything is like above, but texture pos is different, because for opengl
         //image starts at bottom left center and for program image starts at top left
@@ -69,10 +87,10 @@ void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
             textureCorrection *= -1.0f;
         }
 
-        arrpush(chunk->drawData, normalizedTexturePos + textureCorrection);
+        arrpush(*drawData, normalizedTexturePos + textureCorrection);
 
         //it will be used for pseudo lighting hack
-        arrpush(chunk->drawData, blockData[currentStride + 8]);
+        arrpush(*drawData, blockData[currentStride + 8]);
     }
 };
 
@@ -201,6 +219,7 @@ void checkPositiveSideOfBlock(Chunk* currentChunk, Chunk* neighbourChunk, float*
 void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chunk* southChunk, Chunk* northChunk)
 {
     chunk->drawData = NULL;
+    chunk->tDrawData = NULL;
     for(int index = 0; index < CHUNK_VOLUME; index++)
     {
         vec3 blockPos;
@@ -279,6 +298,7 @@ void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chu
 
     //and program pass number of vertices to chunk, for more optimized rendering, and program marks chunk as draw data generated
     chunk->vertices = arrlen(chunk->drawData) / 6;
+    chunk->tVertices = arrlen(chunk->tDrawData) / 6;
     chunk->generatedDrawData = true;
 };
 
@@ -310,5 +330,32 @@ void compileChunkDrawData(Chunk* chunk)
 
     //program releases draw data, because program dont need it
     arrfree(chunk->drawData);
+
+    glGenBuffers(1, &chunk->tVBO);
+    glGenVertexArrays(1, &chunk->tVAO);
+
+    glBindVertexArray(chunk->tVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, chunk->tVBO);
+    glBufferData(GL_ARRAY_BUFFER, arrlen(chunk->tDrawData) * sizeof(float), chunk->tDrawData, GL_STATIC_DRAW);
+
+    //pos
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    //normal
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    //texture coordinates
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    //side index
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(8 * sizeof(float)));
+    glEnableVertexAttribArray(3);
+
+    //program releases draw data, because program dont need it
+    arrfree(chunk->tDrawData);
     chunk->compiledDrawData = true;
 };

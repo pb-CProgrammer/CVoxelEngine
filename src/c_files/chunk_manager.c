@@ -175,6 +175,24 @@ void chunkManagerDraw(int startChunkX, int startChunkZ, int endChunkX, int endCh
             }
         }
     }
+    
+    for(int chunkX = startChunkX; chunkX <= endChunkX; chunkX++)
+    {
+        for(int chunkZ = startChunkZ; chunkZ <= endChunkZ; chunkZ++)
+        {
+            uint64_t key;
+            vec2ToHashKey(chunkX, chunkZ, &key);
+
+            khint_t foundChunk = kh_get(chunk_map, chunkMap, key);
+
+            if(foundChunk != kh_end(chunkMap))
+            {
+                Chunk* chunk = kh_value(chunkMap, foundChunk);
+
+                chunkDrawTransparent(chunk);
+            }
+        }
+    }
 };
 
 //function inits hash map and osn noise contex

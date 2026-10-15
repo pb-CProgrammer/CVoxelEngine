@@ -16,11 +16,11 @@ typedef struct Chunk
     vec2 pos;
     uint8_t chunkData[CHUNK_VOLUME];
     float* drawData;
-    float* transparentDrawData;
+    float* tDrawData;
     GLuint VBO, VAO;
     GLuint tVBO, tVAO;
     unsigned int vertices;
-    unsigned int transparentVertices;
+    unsigned int tVertices;
     bool generatedDrawData;
     bool compiledDrawData;
 } Chunk;
@@ -31,6 +31,7 @@ typedef struct Chunk
 //3.compile those draw data into VBO
 //I seperated 2 and 3 step because compiling must be in main thread while generating chunk and draw data can be in different thread
 void chunkDraw(Chunk* chunk);
+void chunkDrawTransparent(Chunk* chunk);
 void generateChunk(Chunk* chunk);
 void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chunk* southChunk, Chunk* northChunk);
 void compileChunkDrawData(Chunk* chunk);
