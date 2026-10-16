@@ -56,7 +56,7 @@ bool canGoThere(float* pos, bool *isChunkYPosOk)
     {
         int index;
         posToIndex((vec3){ chunkXPos, chunkYPos, chunkZPos }, &index);
-        if (chunk->chunkData[index] < TRANSPARENT_BLOCKS)
+        if (chunk->chunkData[index] < 2)
         {
             return true;
         }

@@ -15,8 +15,8 @@
 #define BLOCK_DATA_STRIDE 9
 #define BLOCK_SIDE_DATA (6 * BLOCK_DATA_STRIDE)
 #define BLOCK_SIDES 6
-#define BLOCKS 6
-#define TRANSPARENT_BLOCKS 2 //how much firsts blocks have transparency
+#define BLOCKS 8
+#define TRANSPARENT_BLOCKS 4 //how much firsts blocks have transparency
 #define TEXTURES_IN_ATLAS_WIDTH 3
 #define TEXTURES_IN_ATLAS_HEIGHT 3
 #define TEXTURES_IN_ATLAS (TEXTURES_IN_ATLAS_WIDTH * TEXTURES_IN_ATLAS_HEIGHT)

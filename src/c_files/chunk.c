@@ -132,6 +132,15 @@ void generateChunk(Chunk* chunk)
                 {
                     chunk->chunkData[index] = WATER_BLOCK;
                 }
+
+                if(x + chunk->pos[0] * CHUNK_SIZE > 10 && x + chunk->pos[0] * CHUNK_SIZE < 20 && z + chunk->pos[1] * CHUNK_SIZE > 10 && z + chunk->pos[1] * CHUNK_SIZE < 20 && y == 70)
+                {
+                    chunk->chunkData[index] = GLASS_BLOCK;
+                }
+                if(x + chunk->pos[0] * CHUNK_SIZE >= 20 && x + chunk->pos[0] * CHUNK_SIZE < 30 && z + chunk->pos[1] * CHUNK_SIZE > 10 && z + chunk->pos[1] * CHUNK_SIZE < 20 && y == 70)
+                {
+                    chunk->chunkData[index] = AQUA_GLASS_BLOCK;
+                }
             }
         }
     }
