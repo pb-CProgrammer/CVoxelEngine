@@ -127,14 +127,9 @@ void generateChunk(Chunk* chunk)
                 {
                     chunk->chunkData[index] = STONE_BLOCK;
                 }
-            }
 
-            if (x + chunk->pos[0] * CHUNK_SIZE == 30 && z + chunk->pos[1] * CHUNK_SIZE == 30)
-            {
-                for(int y = 0; y < CHUNK_HEIGHT; y++)
+                if(y < 30 && chunk->chunkData[index] == AIR_BLOCK)
                 {
-                    int index;
-                    posToIndex((vec3){x, y, z}, &index);
                     chunk->chunkData[index] = WATER_BLOCK;
                 }
             }
@@ -267,7 +262,7 @@ void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chu
                 tempPos[1]++;
                 posToIndex(tempPos, &tempIndex);
 
-                if(chunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
+                if(chunk->chunkData[tempIndex] <= discardBlocksIndex)
                 {
                     addBlockSide(chunk, TOP_SIDE, blockPos, index);
                 }
@@ -285,7 +280,7 @@ void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chu
                 tempPos[1]--;
                 posToIndex(tempPos, &tempIndex);
 
-                if(chunk->chunkData[tempIndex] < TRANSPARENT_BLOCKS - 1)
+                if(chunk->chunkData[tempIndex] <= discardBlocksIndex)
                 {
                     addBlockSide(chunk, BOTTOM_SIDE, blockPos, index);
                 }
