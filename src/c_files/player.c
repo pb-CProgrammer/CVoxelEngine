@@ -7,7 +7,6 @@
 #include "chunk_manager.h"
 #include <GLFW/glfw3.h>
 #include "constants.h"
-#include "game_data.h"
 #include "camera.h"
 #include "settings.h"
 #include "math_help_functions.h"

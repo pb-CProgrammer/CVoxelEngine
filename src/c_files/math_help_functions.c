@@ -13,9 +13,16 @@ void print_vec3(float* target)
     printf("%f %f %f\n", target[0], target[1], target[2]);
 };
 
+void vec2_set(float* origin, float* target)
+{
+    //that function is important, because sometimes (vec)a = (vec)b doesnt work
+    target[0] = origin[0];
+    target[1] = origin[1];
+}
+
 void vec3_set(float* origin, float* target)
 {
-    //that function is important, because sometimes (vec)a + (vec)b doesnt work
+    //that function is important, because sometimes (vec)a = (vec)b doesnt work
     target[0] = origin[0];
     target[1] = origin[1];
     target[2] = origin[2];

@@ -10,16 +10,24 @@
 //that variable is here, because generateChunk() needs it
 extern struct osn_context *osn_ctx;
 
+typedef struct Face
+{
+    vec3 pos[4];
+    vec2 texCoords[4];
+    vec3 normal;
+
+} Face;
+
 //in chunk struct program stores position of chunk in chunk world, each block in chunk and things necesery to generate draw data and draw chunk
 typedef struct Chunk
 {
     vec2 pos;
     uint8_t chunkData[CHUNK_VOLUME];
-    float* drawData;
-    float* tDrawData;
-    GLuint VBO, VAO;
-    GLuint tVBO, tVAO;
-    unsigned int vertices;
+    Face* drawData;
+    Face* tDrawData;
+    GLuint VBO, VAO, EBO;
+    GLuint tVBO, tVAO, tEBO;
+    unsigned int numOfIndices;
     unsigned int tVertices;
     bool generatedDrawData;
     bool compiledDrawData;

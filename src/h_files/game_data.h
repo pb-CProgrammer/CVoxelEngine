@@ -3,6 +3,7 @@
 
 #include "constants.h"
 #include <linmath.h>
+#include <stdint.h>
 
 //there is every data needed to run game, load everything.
 //generate everything

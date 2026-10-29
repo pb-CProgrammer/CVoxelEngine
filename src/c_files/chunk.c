@@ -13,20 +13,20 @@ struct osn_context *osn_ctx;
 void chunkDraw(Chunk* chunk)
 {
     glBindVertexArray(chunk->VAO);
-    glDrawArrays(GL_TRIANGLES, 0, chunk->vertices);
+    glDrawElements(GL_TRIANGLES,chunk->numOfIndices, GL_UNSIGNED_INT, 0);
 }
 
 void chunkDrawTransparent(Chunk* chunk)
 {
-    glBindVertexArray(chunk->tVAO);
-    glDrawArrays(GL_TRIANGLES, 0, chunk->tVertices);
+    // glBindVertexArray(chunk->tVAO);
+    // glDrawArrays(GL_TRIANGLES, 0, chunk->tVertices);
 }
 
 
 //this function push Block face data to chunk.drawData, those are data to create VBO, VAO and draw chunk
 void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
 {
-    float** drawData; //save faces to normal draw data or transparent draw data
+    Face** drawData; //save faces to normal draw data or transparent draw data
     if(chunk->chunkData[index] < TRANSPARENT_BLOCKS)
     {
         drawData = &chunk->tDrawData;
@@ -36,62 +36,59 @@ void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
         drawData = &chunk->drawData;
     }
 
+    Face face;
+    int currentStride = side * BLOCK_SIDE_DATA;
+    
+    // vec3_set((vec3){blockData[currentStride], blockData[currentStride + 1], blockData[currentStride + 2]}, face.pos[0]);
+    // //vec2_set((vec2){blockData[currentStride + 3], blockData[currentStride + 4]}, face.texCoords[0]);
 
-    for(int i = 0; i < 6; i++)
+    // vec3_set((vec3){blockData[currentStride + 5], blockData[currentStride + 6], blockData[currentStride + 7]}, face.pos[1]);
+    // //vec2_set((vec2){blockData[currentStride + 8], blockData[currentStride + 9]}, face.texCoords[1]);
+
+    // vec3_set((vec3){blockData[currentStride + 10], blockData[currentStride + 11], blockData[currentStride + 12]}, face.pos[2]);
+    // //vec2_set((vec2){blockData[currentStride + 13], blockData[currentStride + 14]}, face.texCoords[2]);
+
+    // vec3_set((vec3){blockData[currentStride + 15], blockData[currentStride + 16], blockData[currentStride + 17]}, face.pos[3]);
+    // //vec2_set((vec2){blockData[currentStride + 18], blockData[currentStride + 19]}, face.texCoords[3]);
+
+    
+
+    //tex coords
+    int blockIndex = chunk->chunkData[index] - 1; // - 1 because index = 0 is AIR_BLOCK, but block index = 0 is NOT air
+    int textureIndex = blockSidesTextures[blockIndex][side];
+
+    for (int i = 0; i < 4; i++)
     {
-        //on which stride from blockData program is
-        int currentStride = (side * 6 + i) * BLOCK_DATA_STRIDE;
+        vec3_set((vec3){blockData[currentStride + i * 5] + chunk->pos[0] * CHUNK_SIZE + blockPos[0]
+            , blockData[currentStride + i * 5 + 1] + blockPos[1],
+             blockData[currentStride + i * 5 + 2]  + chunk->pos[1] * CHUNK_SIZE + blockPos[2]
+            }, face.pos[i]);
 
-        //there program pushes those data and  optionally adds some thing to them
+        int texturePosX = blockData[currentStride + i * 5 + 3] + texPosis[textureIndex][0];
+        float normalizedTexturePosX = (float)texturePosX / (float)TEXTURES_IN_ATLAS_WIDTH;
 
-        //vertex pos with chunk offset
-        arrpush(*drawData, blockData[currentStride + 0] + chunk->pos[0] * CHUNK_SIZE + blockPos[0]);
-        arrpush(*drawData, blockData[currentStride + 1] + blockPos[1]);
-        arrpush(*drawData, blockData[currentStride + 2] + chunk->pos[1] * CHUNK_SIZE + blockPos[2]);
-
-        //normals
-        arrpush(*drawData, blockData[currentStride + 3]);
-        arrpush(*drawData, blockData[currentStride + 4]);
-        arrpush(*drawData, blockData[currentStride + 5]);
-
-        //tex coords
-        int blockIndex = chunk->chunkData[index] - 1; // - 1 because index = 0 is AIR_BLOCK, but block index = 0 is NOT air
-        int textureIndex = blockSidesTextures[blockIndex][side];
-
-        //there program treats texturePos as pos on tile map and later we normalize it for shader program
-        int texturePos = blockData[currentStride + 6] + texPosis[textureIndex][0];
-        float normalizedTexturePos = (float)texturePos / (float)TEXTURES_IN_ATLAS_WIDTH;
-
-        //there program moves edges of texture slighty to direction of the center,
-        //because if not, there will be on edges of block color of neightbour tile, while they shouldnt be,
-        //its because we store textures in one atlas
         float textureCorrection = 0.0001f;
-
-        if(blockData[currentStride + 6] > 0.0f)
+        if(blockData[currentStride + i * 5 + 3] > 0.0f)
         {
             textureCorrection *= -1.0f;
         }
 
-        //program combines those two and that is final result
-        arrpush(*drawData, normalizedTexturePos + textureCorrection);
+        face.texCoords[i][0] = normalizedTexturePosX + textureCorrection;
 
-        //there everything is like above, but texture pos is different, because for opengl
-        //image starts at bottom left center and for program image starts at top left
-        texturePos = blockData[currentStride + 7] + TEXTURES_IN_ATLAS_HEIGHT - 1 - texPosis[textureIndex][1];
-        normalizedTexturePos = (float)texturePos / (float)TEXTURES_IN_ATLAS_HEIGHT;
-
+        int texturePosY = blockData[currentStride + i * 5 + 4] + TEXTURES_IN_ATLAS_HEIGHT - 1 - texPosis[textureIndex][1];
+        float normalizedTexturePosY = (float)texturePosY / (float)TEXTURES_IN_ATLAS_HEIGHT;
         textureCorrection = 0.0001f;
-
-        if(blockData[currentStride + 7] > 0.0f)
+        if(blockData[currentStride + i * 5 + 4] > 0.0f)
         {
             textureCorrection *= -1.0f;
         }
 
-        arrpush(*drawData, normalizedTexturePos + textureCorrection);
-
-        //it will be used for pseudo lighting hack
-        arrpush(*drawData, blockData[currentStride + 8]);
+        face.texCoords[i][1] = normalizedTexturePosY + textureCorrection;
     }
+
+    vec3_set((vec3){blockData[currentStride + 20], blockData[currentStride + 21], blockData[currentStride + 22]}, face.normal);
+
+    arrput(*drawData, face);
 };
 
 //function that generates chunk
@@ -301,65 +298,104 @@ void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chu
 
 
     //and program pass number of vertices to chunk, for more optimized rendering, and program marks chunk as draw data generated
-    chunk->vertices = arrlen(chunk->drawData) / 6;
-    chunk->tVertices = arrlen(chunk->tDrawData) / 6;
     chunk->generatedDrawData = true;
 };
 
 void compileChunkDrawData(Chunk* chunk)
 {
+    float *vertices = NULL;
+    unsigned int *indices = NULL;
+
+    unsigned int numOfFaces = arrlen(chunk->drawData);
+
+    int floatsPerFace = 4 * 8; //number fo vertices * floats per vertice (pos, normal, texCoords)
+
+    arrsetcap(vertices, numOfFaces * floatsPerFace);
+    arrsetcap(indices, numOfFaces * 6);
+
+    for (int i = 0; i < numOfFaces; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            arrput(vertices, chunk->drawData[i].pos[j][0]);
+            arrput(vertices, chunk->drawData[i].pos[j][1]);
+            arrput(vertices, chunk->drawData[i].pos[j][2]);
+            arrput(vertices, chunk->drawData[i].normal[0]);
+            arrput(vertices, chunk->drawData[i].normal[1]);
+            arrput(vertices, chunk->drawData[i].normal[2]);
+            arrput(vertices, chunk->drawData[i].texCoords[j][0]);
+            arrput(vertices, chunk->drawData[i].texCoords[j][1]);
+        }
+
+        //indices
+        arrput(indices, i * 4 + 2);
+        arrput(indices, i * 4 + 1);
+        arrput(indices, i * 4);
+
+        arrput(indices, i * 4 + 3);
+        arrput(indices, i * 4 + 2);
+        arrput(indices, i * 4);
+    }
+
     glGenBuffers(1, &chunk->VBO);
+    glGenBuffers(1, &chunk->EBO);
     glGenVertexArrays(1, &chunk->VAO);
 
     glBindVertexArray(chunk->VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, chunk->VBO);
-    glBufferData(GL_ARRAY_BUFFER, arrlen(chunk->drawData) * sizeof(float), chunk->drawData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, arrlen(vertices) * sizeof(float), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, arrlen(indices) * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
     //pos
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, DRAW_DATA_STRIDE * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     //normal
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, DRAW_DATA_STRIDE * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     //texture coordinates
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, DRAW_DATA_STRIDE * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    //side index
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(8 * sizeof(float)));
-    glEnableVertexAttribArray(3);
+    chunk->numOfIndices = arrlen(indices);
 
-    //program releases draw data, because program dont need it
+    arrfree(vertices);
+    arrfree(indices);
     arrfree(chunk->drawData);
-
-    glGenBuffers(1, &chunk->tVBO);
-    glGenVertexArrays(1, &chunk->tVAO);
-
-    glBindVertexArray(chunk->tVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, chunk->tVBO);
-    glBufferData(GL_ARRAY_BUFFER, arrlen(chunk->tDrawData) * sizeof(float), chunk->tDrawData, GL_STATIC_DRAW);
-
-    //pos
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-    //normal
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    //texture coordinates
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-
-    //side index
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(8 * sizeof(float)));
-    glEnableVertexAttribArray(3);
-
-    //program releases draw data, because program dont need it
     arrfree(chunk->tDrawData);
+
+    // //program releases draw data, because program dont need it
+    // arrfree(chunk->drawData);
+
+    // glGenBuffers(1, &chunk->tVBO);
+    // glGenVertexArrays(1, &chunk->tVAO);
+
+    // glBindVertexArray(chunk->tVAO);
+
+    // glBindBuffer(GL_ARRAY_BUFFER, chunk->tVBO);
+    // glBufferData(GL_ARRAY_BUFFER, arrlen(chunk->tDrawData) * sizeof(float), chunk->tDrawData, GL_STATIC_DRAW);
+
+    // //pos
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)0);
+    // glEnableVertexAttribArray(0);
+
+    // //normal
+    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(3 * sizeof(float)));
+    // glEnableVertexAttribArray(1);
+
+    // //texture coordinates
+    // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(6 * sizeof(float)));
+    // glEnableVertexAttribArray(2);
+
+    // //side index
+    // glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(8 * sizeof(float)));
+    // glEnableVertexAttribArray(3);
+
+    // //program releases draw data, because program dont need it
+    // arrfree(chunk->tDrawData);
     chunk->compiledDrawData = true;
 };
