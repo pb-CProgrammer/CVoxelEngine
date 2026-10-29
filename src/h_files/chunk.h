@@ -28,7 +28,7 @@ typedef struct Chunk
     GLuint VBO, VAO, EBO;
     GLuint tVBO, tVAO, tEBO;
     unsigned int numOfIndices;
-    unsigned int tVertices;
+    unsigned int numOfTIndices;
     bool generatedDrawData;
     bool compiledDrawData;
 } Chunk;

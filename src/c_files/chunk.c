@@ -18,8 +18,8 @@ void chunkDraw(Chunk* chunk)
 
 void chunkDrawTransparent(Chunk* chunk)
 {
-    // glBindVertexArray(chunk->tVAO);
-    // glDrawArrays(GL_TRIANGLES, 0, chunk->tVertices);
+    glBindVertexArray(chunk->tVAO);
+    glDrawElements(GL_TRIANGLES,chunk->numOfTIndices, GL_UNSIGNED_INT, 0);
 }
 
 
@@ -38,20 +38,6 @@ void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
 
     Face face;
     int currentStride = side * BLOCK_SIDE_DATA;
-    
-    // vec3_set((vec3){blockData[currentStride], blockData[currentStride + 1], blockData[currentStride + 2]}, face.pos[0]);
-    // //vec2_set((vec2){blockData[currentStride + 3], blockData[currentStride + 4]}, face.texCoords[0]);
-
-    // vec3_set((vec3){blockData[currentStride + 5], blockData[currentStride + 6], blockData[currentStride + 7]}, face.pos[1]);
-    // //vec2_set((vec2){blockData[currentStride + 8], blockData[currentStride + 9]}, face.texCoords[1]);
-
-    // vec3_set((vec3){blockData[currentStride + 10], blockData[currentStride + 11], blockData[currentStride + 12]}, face.pos[2]);
-    // //vec2_set((vec2){blockData[currentStride + 13], blockData[currentStride + 14]}, face.texCoords[2]);
-
-    // vec3_set((vec3){blockData[currentStride + 15], blockData[currentStride + 16], blockData[currentStride + 17]}, face.pos[3]);
-    // //vec2_set((vec2){blockData[currentStride + 18], blockData[currentStride + 19]}, face.texCoords[3]);
-
-    
 
     //tex coords
     int blockIndex = chunk->chunkData[index] - 1; // - 1 because index = 0 is AIR_BLOCK, but block index = 0 is NOT air
@@ -366,36 +352,70 @@ void compileChunkDrawData(Chunk* chunk)
     arrfree(vertices);
     arrfree(indices);
     arrfree(chunk->drawData);
+
+    vertices = NULL;
+    indices = NULL;
+
+    numOfFaces = arrlen(chunk->tDrawData);
+
+    floatsPerFace = 4 * 8; //number fo vertices * floats per vertice (pos, normal, texCoords)
+
+    arrsetcap(vertices, numOfFaces * floatsPerFace);
+    arrsetcap(indices, numOfFaces * 6);
+
+    for (int i = 0; i < numOfFaces; i++)
+    {
+        for (int j = 0; j < 4; j++)
+        {
+            arrput(vertices, chunk->tDrawData[i].pos[j][0]);
+            arrput(vertices, chunk->tDrawData[i].pos[j][1]);
+            arrput(vertices, chunk->tDrawData[i].pos[j][2]);
+            arrput(vertices, chunk->tDrawData[i].normal[0]);
+            arrput(vertices, chunk->tDrawData[i].normal[1]);
+            arrput(vertices, chunk->tDrawData[i].normal[2]);
+            arrput(vertices, chunk->tDrawData[i].texCoords[j][0]);
+            arrput(vertices, chunk->tDrawData[i].texCoords[j][1]);
+        }
+
+        //indices
+        arrput(indices, i * 4 + 2);
+        arrput(indices, i * 4 + 1);
+        arrput(indices, i * 4);
+
+        arrput(indices, i * 4 + 3);
+        arrput(indices, i * 4 + 2);
+        arrput(indices, i * 4);
+    }
+
+    glGenBuffers(1, &chunk->tVBO);
+    glGenBuffers(1, &chunk->tEBO);
+    glGenVertexArrays(1, &chunk->tVAO);
+
+    glBindVertexArray(chunk->tVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, chunk->tVBO);
+    glBufferData(GL_ARRAY_BUFFER, arrlen(vertices) * sizeof(float), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->tEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, arrlen(indices) * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+
+    //pos
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, DRAW_DATA_STRIDE * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    //normal
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, DRAW_DATA_STRIDE * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    //texture coordinates
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, DRAW_DATA_STRIDE * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    chunk->numOfTIndices = arrlen(indices);
+
+    arrfree(vertices);
+    arrfree(indices);
     arrfree(chunk->tDrawData);
 
-    // //program releases draw data, because program dont need it
-    // arrfree(chunk->drawData);
-
-    // glGenBuffers(1, &chunk->tVBO);
-    // glGenVertexArrays(1, &chunk->tVAO);
-
-    // glBindVertexArray(chunk->tVAO);
-
-    // glBindBuffer(GL_ARRAY_BUFFER, chunk->tVBO);
-    // glBufferData(GL_ARRAY_BUFFER, arrlen(chunk->tDrawData) * sizeof(float), chunk->tDrawData, GL_STATIC_DRAW);
-
-    // //pos
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)0);
-    // glEnableVertexAttribArray(0);
-
-    // //normal
-    // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(3 * sizeof(float)));
-    // glEnableVertexAttribArray(1);
-
-    // //texture coordinates
-    // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(6 * sizeof(float)));
-    // glEnableVertexAttribArray(2);
-
-    // //side index
-    // glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, BLOCK_DATA_STRIDE * sizeof(float), (void*)(8 * sizeof(float)));
-    // glEnableVertexAttribArray(3);
-
-    // //program releases draw data, because program dont need it
-    // arrfree(chunk->tDrawData);
     chunk->compiledDrawData = true;
 };
