@@ -12,7 +12,7 @@
         "playerCameraHeight": 1.7000000476837158
     },
     "game": {
-        "drawAreaInChunks": 31,
+        "drawAreaInChunks": 21,
         "worldSeed": 283458
     }
 }

@@ -43,5 +43,7 @@ void chunkDrawTransparent(Chunk* chunk);
 void generateChunk(Chunk* chunk);
 void generateChunkDrawData(Chunk* chunk, Chunk* westChunk, Chunk* eastChunk, Chunk* southChunk, Chunk* northChunk);
 void compileChunkDrawData(Chunk* chunk);
+void updateTransparentOrder(Chunk* chunk, vec3 cameraPos);
+void chunkExit(Chunk* chunk);
 
 #endif

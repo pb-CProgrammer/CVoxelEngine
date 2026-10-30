@@ -3,9 +3,12 @@
 #include "constants.h"
 #include "game_data.h"
 #include "math_help_functions.h"
+#include <math.h>
 #include <osn-noise.h>
 #include <linmath.h>
 #include <stb/stb_ds.h>
+#include <stdint.h>
+#include <stdlib.h>
 
 struct osn_context *osn_ctx;
 
@@ -80,6 +83,16 @@ void addBlockSide(Chunk* chunk, Side side, float* blockPos, int index)
 //function that generates chunk
 void generateChunk(Chunk* chunk)
 {
+    //initializing default safe values
+    chunk->VBO = 0;
+    chunk->VAO = 0;
+    chunk->EBO = 0;
+    chunk->tVBO = 0;
+    chunk->tVAO = 0;
+    chunk->tEBO = 0;
+    chunk->drawData = NULL;
+    chunk->tDrawData = NULL;
+
     for(int x = 0; x < CHUNK_SIZE; x++)
     {
         for(int z = 0; z < CHUNK_SIZE; z++)
@@ -351,7 +364,6 @@ void compileChunkDrawData(Chunk* chunk)
 
     arrfree(vertices);
     arrfree(indices);
-    arrfree(chunk->drawData);
 
     vertices = NULL;
     indices = NULL;
@@ -397,7 +409,7 @@ void compileChunkDrawData(Chunk* chunk)
     glBufferData(GL_ARRAY_BUFFER, arrlen(vertices) * sizeof(float), vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, chunk->tEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, arrlen(indices) * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, arrlen(indices) * sizeof(unsigned int), indices, GL_DYNAMIC_DRAW);
 
     //pos
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, DRAW_DATA_STRIDE * sizeof(float), (void*)0);
@@ -415,7 +427,72 @@ void compileChunkDrawData(Chunk* chunk)
 
     arrfree(vertices);
     arrfree(indices);
-    arrfree(chunk->tDrawData);
 
     chunk->compiledDrawData = true;
 };
+
+// temp struct for qsort
+typedef struct TransparentSortFace
+{
+    uint32_t faceIndex;
+    float distanceFromCameraSq;
+} TransparentSortFace;
+
+int compareSortFaces(const void* a, const void* b)
+{
+    float distA = ((TransparentSortFace*)a)->distanceFromCameraSq;
+    float distB = ((TransparentSortFace*)b)->distanceFromCameraSq;
+    if (distB > distA) return 1;
+    if (distB < distA) return -1;
+    return 0;
+}
+
+void updateTransparentOrder(Chunk* chunk, vec3 cameraPos)
+{
+    TransparentSortFace* tFacesSort = NULL;
+    uint16_t numOfFaces = arrlen(chunk->tDrawData);
+
+    arrsetlen(tFacesSort, numOfFaces);
+    for (int i = 0; i < numOfFaces; i++)
+    {
+        TransparentSortFace tempFace;
+        tempFace.faceIndex = i;
+        vec3 faceCenter = { 0.0f, 0.0f, 0.0f };
+
+        for (int j = 0; j < 4; j++)
+        {
+            faceCenter[0] += chunk->tDrawData[i].pos[j][0];
+            faceCenter[1] += chunk->tDrawData[i].pos[j][1];
+            faceCenter[2] += chunk->tDrawData[i].pos[j][2];
+        }
+        for (int j = 0; j < 3; j++)
+        {
+            faceCenter[j] /= 4.0f;
+        }
+
+        tempFace.distanceFromCameraSq = (cameraPos[0] - faceCenter[0]) * (cameraPos[0] - faceCenter[0]) + 
+        (cameraPos[1] - faceCenter[1]) * (cameraPos[1] - faceCenter[1])
+         + (cameraPos[2] - faceCenter[2]) * (cameraPos[2] - faceCenter[2]);
+
+        tFacesSort[i] = tempFace;
+    }
+
+    qsort(tFacesSort, numOfFaces, sizeof(TransparentSortFace), compareSortFaces);
+
+    //to be finished
+}
+
+void chunkExit(Chunk* chunk)
+{
+    //free opengl stuff
+    glDeleteBuffers(1, &chunk->VBO);
+    glDeleteBuffers(1, &chunk->EBO);
+    glDeleteVertexArrays(1, &chunk->VAO);
+
+    glDeleteBuffers(1, &chunk->tVBO);
+    glDeleteBuffers(1, &chunk->tEBO);
+    glDeleteVertexArrays(1, &chunk->tVAO);
+
+    arrfree(chunk->drawData);
+    arrfree(chunk->tDrawData);
+}

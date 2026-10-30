@@ -7,6 +7,7 @@
 #include <math.h>
 #include <osn-noise.h>
 #include <khash.h>
+#include <stb/stb_ds.h>
 #include <string.h>
 
 //hash map for chunks
@@ -210,14 +211,10 @@ void chunkManagerExit()
         {
             Chunk* chunk = kh_value(chunkMap, i);
 
-            //free opengl stuff
-            glDeleteBuffers(1, &chunk->VBO);
-            glDeleteVertexArrays(1, &chunk->VAO);
+            chunkExit(chunk);
 
             //free chunk itself
             free(chunk);
-
-            //program dont free chunk draw data, because it was set free earlier
         }
     }
 

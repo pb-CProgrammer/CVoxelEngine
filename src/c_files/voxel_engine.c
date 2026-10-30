@@ -13,7 +13,7 @@
  * TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 separate calculateplayerData
 
-
+    put chunk_data on heap
 
 
   * realistic movement, i mean if i press w and a, i should be the same speeed as i would press w, not times sqrt(2) + simple physics
